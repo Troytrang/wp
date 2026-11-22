@@ -236,9 +236,14 @@
   /* ---------- custom cursor ---------- */
   const cur = $("#cursor");
   if (matchMedia("(pointer: fine)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("has-cursor");   // hides the system pointer (see style.css)
     addEventListener("pointermove", (e) => {
-      cur.style.translate = `${e.clientX}px ${e.clientY}px`; cur.style.opacity = 1;
+      if (e.pointerType !== "mouse") return;
+      cur.style.translate = `${e.clientX}px ${e.clientY}px`; cur.style.opacity = lb.hidden ? 1 : 0;
       cur.classList.toggle("big", !!e.target.closest("a, button"));
     }, { passive: true });
+    // leaving the window, or entering a video player (an iframe gets the real pointer): hide ours
+    document.addEventListener("pointerleave", () => (cur.style.opacity = 0));
+    document.addEventListener("pointerover", (e) => { if (e.target.closest("iframe")) cur.style.opacity = 0; });
   } else cur.remove();
 })();

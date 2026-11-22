@@ -288,3 +288,10 @@ button.pill:hover, a.pill:hover { transform: translate(-2px, -3px); }
 /* pixel column runs the full page; keep content clear of it */
 main, .foot { position: relative; z-index: 1; }
 @media (min-width: 701px) { main { padding-right: clamp(48px, 7vw, 110px); } }
+
+/* custom cursor replaces the system one (fine pointers only); the video viewer keeps the normal pointer */
+@media (pointer: fine) {
+  html.has-cursor, html.has-cursor * { cursor: none !important; }
+  html.has-cursor .lightbox, html.has-cursor .lightbox * { cursor: auto !important; }
+  html.has-cursor .lightbox button { cursor: pointer !important; }
+}
