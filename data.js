@@ -8,7 +8,7 @@
    ========================================================= */
 window.PORTFOLIO = {
   /* The video lists come from this Google Sheet ("Portfolio – Danh sách video").
-     Columns: Link video | Nhóm (Game Ads / LED Visual / Brand & Product) | Khung (Dọc / Ngang) | Tên | Hiện trên web (Có / Không).
+     Columns: Link video | Nhóm (Game Ads / LED Visual / Brand & Product) | Khung (Dọc / Ngang / Vuông, or any size: 32:9, 3840x1080…) | Tên | Hiện trên web (Có / Không).
      Rows show on the site in the sheet's order. The sheet must stay shared as "Anyone with the link – Viewer".
      If the sheet can't be read, the "items" lists below are used instead. */
   sheetId: "1xePo5ngCP-7prVJO9N1QnKw_-yvN5igSTMdkp8gvgfs",

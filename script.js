@@ -17,6 +17,18 @@
   }
   const fold = (s) => (s || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
   const groupOf = (g) => { g = fold(g); return g.includes("game") ? "game-ads" : g.includes("led") ? "led-visual" : (g.includes("brand") || g.includes("product") || g.includes("san pham")) ? "brand-product" : null; };
+  // "Khung": Dọc / Ngang, or any ratio such as 32:9, 3840x1080, 1080×3840, 5:1
+  function frameOf(raw) {
+    const f = fold(raw);
+    const m = f.match(/(\d+(?:[.,]\d+)?)\s*[:x×*\/]\s*(\d+(?:[.,]\d+)?)/);
+    if (m) {
+      const r = parseFloat(m[1].replace(",", ".")) / parseFloat(m[2].replace(",", "."));
+      if (r > 0 && isFinite(r)) return { format: r < 0.8 ? "vertical" : "wide", ratio: r, label: m[1] + ":" + m[2] };
+    }
+    if (/doc|vertical|dung/.test(f)) return { format: "vertical", ratio: 9 / 16 };
+    if (/vuong|square/.test(f)) return { format: "wide", ratio: 1, label: "1:1" };
+    return { format: "wide", ratio: 16 / 9 };
+  }
   async function mergeSheet() {
     if (!D.sheetId) return;
     try {
@@ -27,11 +39,7 @@
       rows.forEach(([link, grp, frame, title, show]) => {
         const id = groupOf(grp); if (!id) return;
         const s = fold(show); if (s && /^(khong|no|false|0|an)$/.test(s)) return;
-        const f = fold(frame);
-        (bySec[id] = bySec[id] || []).push({
-          video: (link || "").trim(), title: (title || "").trim() || "Video",
-          format: /doc|vertical|9:16|dung/.test(f) ? "vertical" : "wide"
-        });
+        (bySec[id] = bySec[id] || []).push({ video: (link || "").trim(), title: (title || "").trim() || "Video", ...frameOf(frame) });
       });
       D.sections.forEach((sec) => { if (bySec[sec.id]) sec.items = bySec[sec.id]; });
     } catch (e) { console.warn("Sheet not loaded, using data.js", e); }
@@ -59,13 +67,14 @@
     if (v.kind === "file") return `<video class="thumb" src="${esc(v.src)}" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>`;
     return `<iframe class="loop" data-src="${v.loop}" title="${esc(title)} (preview)" tabindex="-1" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
   }
-  const frameHTML = (format, inner) =>
-    `<div class="frame ${format === "vertical" ? "frame-vert" : "frame-wide"}">
+  const ratioOf = (it) => it.ratio || (it.format === "vertical" ? 9 / 16 : 16 / 9);
+  const frameHTML = (format, inner, ratio) =>
+    `<div class="frame ${format === "vertical" ? "frame-vert" : "frame-wide"}"${ratio ? ` style="--ar:${ratio.toFixed(4)}"` : ""}>
        <span class="p p1"></span><span class="p p2"></span><span class="p p3"></span>
        <div class="win">${inner}</div>
      </div>`;
-  const placeholder = (format, title) =>
-    `<div class="placeholder"><div>VIDEO ${format === "vertical" ? "9:16" : "16:9"}<small>${esc(title)} — coming soon</small></div></div>`;
+  const placeholder = (format, title, label) =>
+    `<div class="placeholder"><div>VIDEO ${label || (format === "vertical" ? "9:16" : "16:9")}<small>${esc(title)} — coming soon</small></div></div>`;
 
   /* ---------- hero sticker (inline so its two lines can animate) ---------- */
   const sticker = $("#sticker");
@@ -104,13 +113,14 @@
        </button>`);
     const card = (it, k) => {
       const v = parseVideo(it.video);
-      if (!v) return `<article class="item reveal" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title))}</article>`;
+      const ar = ratioOf(it), cls = ar >= 2.2 ? " item-ultra" : "";
+      if (!v) return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title, it.label), ar)}</article>`;
       const still = v.kind === "file"
         ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
         : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
-        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-sec="${sec.id}" data-idx="${k}" aria-label="Play ${esc(it.title)} with sound"><span class="sound">▶ PLAY WITH SOUND</span></button>`;
-      return `<article class="item reveal" aria-label="${esc(it.title)}">${frameHTML(it.format, media)}</article>`;
+        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-sec="${sec.id}" data-idx="${k}" aria-label="Play ${esc(it.title)} with sound"><span class="sound">▶ PLAY WITH SOUND</span></button>`;
+      return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, media, ar)}</article>`;
     };
     // index inside the section's playlist (items that have a video), used by the viewer's ◀ ▶
     let n = 0;
@@ -122,7 +132,9 @@
       const more = list.length > PAGE ? `<button class="btn btn-white more" type="button" data-more>LOAD MORE <span>(${list.length - PAGE})</span></button>` : "";
       return `<div class="grid ${cls}">${html}</div>${more}`;
     };
-    const vert = indexed.filter((x) => x.it.format === "vertical"), wide = indexed.filter((x) => x.it.format !== "vertical");
+    const vert = indexed.filter((x) => x.it.format === "vertical"),
+          wide = indexed.filter((x) => x.it.format !== "vertical" && ratioOf(x.it) < 2.2),
+          ultra = indexed.filter((x) => x.it.format !== "vertical" && ratioOf(x.it) >= 2.2);   // very wide LED walls get their own full-width row
     panels.insertAdjacentHTML("beforeend",
       `<div class="panel" role="tabpanel" id="panel-${sec.id}" aria-labelledby="tab-${sec.id}" ${i ? "hidden" : ""}>
          <div class="panel-head">
@@ -131,6 +143,7 @@
          </div>
          ${grid(vert, "grid-vert")}
          ${grid(wide, "grid-wide")}
+         ${grid(ultra, "grid-ultra")}
        </div>`);
   });
   // "LOAD MORE": reveal the next PAGE cards of that grid
@@ -187,14 +200,17 @@
       : `<iframe src="${v.embed}" title="${esc(it.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
     $("#lb-title").textContent = it.title;
     $("#lb-count").textContent = list.length > 1 ? `${pos + 1} / ${list.length}` : "";
-    dialog.classList.toggle("vert", it.format === "vertical");
+    const ar = ratioOf(it);
+    dialog.classList.remove("vert");
+    dialog.style.width = `min(1400px, 92vw, calc(76vh * ${ar.toFixed(4)}))`;
+    player.style.aspectRatio = ar.toFixed(4);
     dialog.classList.toggle("single", list.length < 2);
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button.open[data-video]");
     if (b) {
       lastFocus = b;
-      list = b.dataset.sec ? PLAYLISTS[b.dataset.sec] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format }];
+      list = b.dataset.sec ? PLAYLISTS[b.dataset.sec] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
       show(b.dataset.sec ? +b.dataset.idx : 0);
       lb.hidden = false; document.body.style.overflow = "hidden";
       $(".lb-close").focus();
