@@ -65,7 +65,7 @@ window.PORTFOLIO = {
 
   experience: [
     { company: "VTC Intercom", years: "2025 – 2026", role: "Video Editor · Game Ads · LED Visual & Event" },
-    { company: "Freelance", years: "2025 – 2026", role: "Video Editor · LED Visual · Brand & Product" },
+    { company: "Freelance", years: "2024 – 2026", role: "Video Editor · LED Visual · Brand & Product" },
     { company: "HG Media", years: "2024 – 2025", role: "Video Editor · YouTube (~1M monthly views)" }
   ],
   software: ["After Effects", "Premiere Pro", "Photoshop", "Illustrator", "Blender"],
