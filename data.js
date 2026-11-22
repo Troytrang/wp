@@ -29,7 +29,10 @@ window.PORTFOLIO = {
       { src: "assets/music/07-greatness-on-me-instrumental-version.mp3", title: "Greatness on Me (Instrumental)", artist: "Witchitaw Slim" },
       { src: "assets/music/08-mine.mp3", title: "Mine", artist: "Duckmaw" },
       { src: "assets/music/09-paperclips.mp3", title: "Paperclips", artist: "Another Notion" },
-      { src: "assets/music/10-snakes-instrumental-version.mp3", title: "Snakes (Instrumental)", artist: "Onoe Caponoe" }
+      { src: "assets/music/10-snakes-instrumental-version.mp3", title: "Snakes (Instrumental)", artist: "Onoe Caponoe" },
+      { src: "assets/music/11-payday.mp3", title: "PAYDAY", artist: "BLUE STEEL" },
+      { src: "assets/music/12-in-vain.mp3", title: "In Vain", artist: "Kouba" },
+      { src: "assets/music/13-divine.mp3", title: "Divine", artist: "Janset" }
     ]
   },
 

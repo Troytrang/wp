@@ -239,6 +239,8 @@
   let musicOn = false, pausedForVideo = false;
   const M = D.music || {}, TR = M.tracks || (M.src ? [{ src: M.src, title: M.title || "", artist: M.credit || "" }] : []);
   let song = 0;
+  const MODE_BTNS = `<button class="pl-btn pl-mode" type="button" data-pl="shuffle" aria-pressed="false" aria-label="Shuffle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h4.2l9 11H19M3 17.5h4.2l2.6-3.2M13.6 9.7l2.6-3.2H19" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M18 3.5l4 3-4 3zM18 14.5l4 3-4 3z"/></svg></button>` +
+    `<button class="pl-btn pl-mode" type="button" data-pl="repeat" aria-pressed="true" aria-label="Repeat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11V8h12.5M19 13v3H6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 4.5l4 3.5-4 3.5zM8 12.5l-4 3.5 4 3.5z"/></svg><i class="one">1</i></button>`;
   const plTitle = $("#pl-title"), plArtist = $("#pl-artist"), seek = $("#pl-seek"), vol = $("#pl-vol"), list$ = $("#pl-list");
   const fmt = (x) => isFinite(x) ? `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, "0")}` : "";
   function load(i) {
@@ -246,19 +248,51 @@
     bgm.src = TR[song].src;
     plTitle.textContent = TR[song].title; plArtist.textContent = TR[song].artist;
     mBtn.title = `${TR[song].title} — ${TR[song].artist}${M.credit ? " · " + M.credit : ""}`;
-    list$.querySelectorAll("li").forEach((li, k) => li.classList.toggle("on", k === song));
+    list$.querySelectorAll("li[data-k]").forEach((li) => li.classList.toggle("on", +li.dataset.k === song));
     seek.value = 0;
   }
   if (TR.length) {
     player$.hidden = false;
     bgm.volume = M.volume ?? 0.35; vol.value = Math.round(bgm.volume * 100);
-    list$.innerHTML = TR.map((t, k) => `<li><button type="button" data-track="${k}"><span class="n">${String(k + 1).padStart(2, "0")}</span><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></button></li>`).join("") +
+    list$.innerHTML = `<li class="pl-head"><span>PLAYLIST · ${TR.length}</span>${MODE_BTNS}</li>` + TR.map((t, k) => `<li data-k="${k}"><button type="button" data-track="${k}"><span class="n">${String(k + 1).padStart(2, "0")}</span><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></button></li>`).join("") +
       (M.credit ? `<li class="pl-credit">Music: ${esc(M.credit)}</li>` : "");
     load(0);
     mBtn.insertAdjacentHTML("beforeend", '<span class="music-hint">♪ turn on music</span>');
     setTimeout(() => mBtn.querySelector(".music-hint")?.remove(), 7000);
   }
-  bgm.addEventListener("ended", () => { load(song + 1); if (musicOn) bgm.play().catch(() => {}); });
+  // shuffle + repeat (all / one / off); remembered between visits
+  let shuffle = false, repeat = "all", order = [];
+  try { shuffle = localStorage.getItem("pl-shuffle") === "1"; repeat = localStorage.getItem("pl-repeat") || "all"; } catch (e) {}
+  const save = () => { try { localStorage.setItem("pl-shuffle", shuffle ? "1" : "0"); localStorage.setItem("pl-repeat", repeat); } catch (e) {} };
+  function makeOrder() {
+    order = TR.map((_, k) => k);
+    if (shuffle) {              // random order that starts with the song now playing
+      for (let k = order.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [order[k], order[j]] = [order[j], order[k]]; }
+      order.splice(order.indexOf(song), 1); order.unshift(song);
+    }
+  }
+  function step(dir) {          // index of the next / previous song, or -1 at the end when repeat is off
+    const at = order.indexOf(song) + dir;
+    if (at >= order.length || at < 0) {
+      if (repeat === "off" && dir > 0) return -1;
+      if (shuffle && dir > 0) { makeOrder(); return order[1] ?? order[0]; }
+      return order[(at + order.length) % order.length];
+    }
+    return order[at];
+  }
+  function paintModes() {
+    player$.querySelectorAll('[data-pl="shuffle"]').forEach((b) => { b.setAttribute("aria-pressed", shuffle); b.title = shuffle ? "Shuffle: on" : "Shuffle: off"; });
+    player$.querySelectorAll('[data-pl="repeat"]').forEach((b) => { b.dataset.mode = repeat; b.setAttribute("aria-pressed", repeat !== "off");
+      b.title = b.ariaLabel = { all: "Repeat: all songs", one: "Repeat: this song", off: "Repeat: off" }[repeat]; });
+    bgm.loop = repeat === "one";
+  }
+  $(".pl-modes").innerHTML = MODE_BTNS;
+  makeOrder(); paintModes();
+  bgm.addEventListener("ended", () => {
+    const n = step(1);
+    if (n < 0) { setMusic(false); load(order[0]); return; }      // end of the playlist with repeat off
+    load(n); if (musicOn) bgm.play().catch(() => {});
+  });
   bgm.addEventListener("timeupdate", () => { if (!seeking && bgm.duration) seek.value = Math.round(bgm.currentTime / bgm.duration * 1000);
     seek.title = `${fmt(bgm.currentTime)} / ${fmt(bgm.duration)}`; });
   let seeking = false;
@@ -268,13 +302,15 @@
   player$.addEventListener("click", (e) => {
     const b = e.target.closest("[data-pl],[data-track]"); if (!b) return;
     const act = b.dataset.pl;
-    if (b.dataset.track) { load(+b.dataset.track); setMusic(true); return; }
+    if (b.dataset.track) { load(+b.dataset.track); if (shuffle) makeOrder(); setMusic(true); return; }
     if (act === "toggle") setMusic(!musicOn);
     if (act === "next" || act === "prev") {
       if (act === "prev" && bgm.currentTime > 3) bgm.currentTime = 0;     // like any player: first press restarts the song
-      else load(song + (act === "next" ? 1 : -1));
+      else { const n = step(act === "next" ? 1 : -1); load(n < 0 ? order[0] : n); }
       if (musicOn) { pausedForVideo = false; bgm.play().catch(() => {}); }
     }
+    if (act === "shuffle") { shuffle = !shuffle; makeOrder(); paintModes(); save(); }
+    if (act === "repeat") { repeat = { all: "one", one: "off", off: "all" }[repeat]; paintModes(); save(); }
     if (act === "list") { const open = list$.hidden; list$.hidden = !open; b.setAttribute("aria-expanded", open); }
   });
   document.addEventListener("click", (e) => { if (!list$.hidden && !e.target.closest("#player")) { list$.hidden = true; $('[data-pl="list"]').setAttribute("aria-expanded", false); } });
