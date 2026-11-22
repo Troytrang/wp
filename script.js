@@ -338,7 +338,7 @@
     mBtn.querySelector(".music-hint")?.remove();
     if (on) { startViz(); bgm.play().catch(() => setMusic(false)); } else bgm.pause();
     player$.classList.toggle("on", on);
-    const mainBtn = $('[data-pl="toggle"]'); mainBtn.textContent = on ? "⏸" : "▶"; mainBtn.setAttribute("aria-label", on ? "Pause" : "Play");
+    const mainBtn = $('[data-pl="toggle"]'); mainBtn.setAttribute("aria-label", on ? "Pause" : "Play");
   }
   mBtn.addEventListener("click", () => setMusic(!musicOn));
 
