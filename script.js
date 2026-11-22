@@ -237,15 +237,15 @@
     function draw() {
       if (stopped || !visible) return;
       place();
-      ring.classList.remove("on"); void ring.getBoundingClientRect(); ring.classList.add("on");   // restart the draw animation
-      timer = setTimeout(() => { ring.classList.add("out"); timer = setTimeout(() => { ring.classList.remove("out"); k = (k + 1) % tabBtns.length; draw(); }, 350); }, 2500);
+      void ring.getBoundingClientRect(); ring.classList.add("on");          // moved while invisible, then fades in
+      timer = setTimeout(() => { ring.classList.remove("on"); timer = setTimeout(() => { k = (k + 1) % tabBtns.length; draw(); }, 450); }, 2500);
     }
     const stop = () => { stopped = true; clearTimeout(timer); ring.classList.remove("on"); };
     tabBtns.forEach((b) => b.addEventListener("click", stop));          // once someone uses the tabs, the hint has done its job
     new IntersectionObserver(([en]) => {
       visible = en.isIntersecting;
       if (visible && !stopped && !timer) draw();
-      if (!visible) { clearTimeout(timer); timer = null; ring.classList.remove("on", "out"); }
+      if (!visible) { clearTimeout(timer); timer = null; ring.classList.remove("on"); }
     }, { threshold: 0.6 }).observe(tabs);
     addEventListener("resize", () => { if (ring.classList.contains("on")) place(); });
   })();
