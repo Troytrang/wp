@@ -189,6 +189,25 @@
     setTimeout(() => ($("#copied").textContent = ""), 2200);
   });
 
+  /* ---------- background music (browsers only allow sound after a click) ---------- */
+  const bgm = $("#bgm"), mBtn = $("#music");
+  let musicOn = false, pausedForVideo = false;
+  if (D.music && D.music.src) {
+    bgm.src = D.music.src; bgm.volume = D.music.volume ?? 0.35;
+    mBtn.hidden = false;
+    if (D.music.title) mBtn.title = D.music.title + (D.music.credit ? " — " + D.music.credit : "");
+    mBtn.insertAdjacentHTML("beforeend", '<span class="music-hint">♪ turn on music</span>');
+    setTimeout(() => mBtn.querySelector(".music-hint")?.remove(), 7000);
+  }
+  function setMusic(on) {
+    musicOn = on;
+    mBtn.setAttribute("aria-pressed", on);
+    mBtn.setAttribute("aria-label", on ? "Pause background music" : "Play background music");
+    mBtn.querySelector(".music-hint")?.remove();
+    if (on) bgm.play().catch(() => setMusic(false)); else bgm.pause();
+  }
+  mBtn.addEventListener("click", () => setMusic(!musicOn));
+
   /* ---------- lightbox (◀ ▶ through the section) ---------- */
   const lb = $("#lightbox"), player = $("#lb-player"), dialog = $(".lb-dialog");
   let lastFocus = null, list = [], pos = 0;
@@ -213,6 +232,7 @@
       list = b.dataset.sec ? PLAYLISTS[b.dataset.sec] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
       show(b.dataset.sec ? +b.dataset.idx : 0);
       lb.hidden = false; document.body.style.overflow = "hidden";
+      if (musicOn) { bgm.pause(); pausedForVideo = true; }
       $(".lb-close").focus();
     }
     if (e.target.closest("[data-close]")) close();
@@ -222,6 +242,8 @@
   function close() {
     if (lb.hidden) return;
     lb.hidden = true; player.innerHTML = ""; document.body.style.overflow = "";
+    if (pausedForVideo && musicOn) bgm.play().catch(() => {});
+    pausedForVideo = false;
     if (lastFocus) lastFocus.focus();
   }
   document.addEventListener("keydown", (e) => {

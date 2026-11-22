@@ -313,3 +313,19 @@ main, .foot { position: relative; z-index: 1; }
 .grid-vert .item .frame-vert { max-width: 100%; }
 .lb-dialog { max-width: 92vw; }
 .lb-player { max-height: 80vh; }
+
+/* ---------- background music toggle ---------- */
+.music { position: fixed; left: 20px; bottom: 20px; z-index: 60; display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 18px 10px 14px; font-family: var(--display); font-size: 15px; color: var(--blue-2);
+  background: var(--yel); border: 4px solid var(--white); box-shadow: 6px 6px 0 var(--ink); transform: skewX(-10deg); cursor: pointer; }
+.music:hover { transform: skewX(-10deg) translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+.music[aria-pressed="true"] { background: var(--white); }
+.eq { display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; }
+.eq i { width: 4px; height: 30%; background: var(--blue-2); }
+.music[aria-pressed="true"] .eq i { animation: eq .9s ease-in-out infinite; }
+.music[aria-pressed="true"] .eq i:nth-child(2) { animation-delay: -.3s; }
+.music[aria-pressed="true"] .eq i:nth-child(3) { animation-delay: -.6s; }
+.music[aria-pressed="true"] .eq i:nth-child(4) { animation-delay: -.15s; }
+@keyframes eq { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+.music-hint { position: absolute; left: 0; bottom: calc(100% + 12px); white-space: nowrap; transform: skewX(10deg);
+  background: var(--ink); color: var(--yel); font: 700 15px var(--body); padding: 4px 10px; animation: bob 1.6s ease-in-out infinite; }
