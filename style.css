@@ -335,12 +335,14 @@ main, .foot { position: relative; z-index: 1; }
 .music-hint { position: absolute; left: 0; bottom: calc(100% + 12px); white-space: nowrap; transform: skewX(10deg);
   background: var(--ink); color: var(--yel); font: 700 15px var(--body); padding: 4px 10px; animation: bob 1.6s ease-in-out infinite; }
 
-/* project cards: a stack of paper behind + a badge with the clip count */
-.item-project .frame::before, .item-project .frame::after { content: ""; position: absolute; inset: -26px; z-index: -2;
-  background: var(--white); border: 6px solid var(--blue-2); transform: rotate(5deg) translate(26px, 18px); box-shadow: 8px 8px 0 var(--ink); }
-.item-project .frame::after { transform: rotate(-4deg) translate(-24px, 24px); background: var(--yel); }
+/* project cards: same frame as every other video + a tilted sticker with the clip count */
 .proj-badge { position: absolute; left: 12px; top: 12px; z-index: 3; pointer-events: none;
-  font-family: var(--display); font-size: 15px; color: var(--blue-2); background: var(--yel);
-  border: 3px solid var(--white); padding: 4px 10px; box-shadow: 4px 4px 0 var(--ink); }
-.proj-badge b { background: var(--blue-2); color: var(--white); padding: 0 6px; margin-left: 4px; font-weight: 400; }
-.item-project .sound { opacity: 1; translate: -50% 0; }
+  font-family: var(--display); font-size: 15px; color: var(--blue-2); background: var(--white);
+  border: 3px solid var(--blue-2); padding: 3px 10px; }
+.clip-sticker { position: absolute; right: -40px; top: -44px; z-index: 4; pointer-events: none;
+  width: 96px; height: 96px; display: grid; place-content: center; text-align: center;
+  background: var(--yel); color: var(--blue-2); border: 5px solid var(--blue-2); box-shadow: 6px 6px 0 var(--ink);
+  font: 400 15px/1 var(--display); letter-spacing: .5px; rotate: 12deg; transition: rotate .25s cubic-bezier(.2,1.4,.4,1); }
+.clip-sticker b { display: block; font-size: 40px; font-weight: 400; line-height: .95; }
+.item-project:hover .clip-sticker { rotate: 4deg; }
+@media (max-width: 700px) { .clip-sticker { width: 72px; height: 72px; right: -18px; top: -30px; font-size: 12px; } .clip-sticker b { font-size: 30px; } }

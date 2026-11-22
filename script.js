@@ -77,10 +77,10 @@
     return `<iframe class="loop" data-src="${v.loop}" title="${esc(title)} (preview)" tabindex="-1" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
   }
   const ratioOf = (it) => it.ratio || (it.format === "vertical" ? 9 / 16 : 16 / 9);
-  const frameHTML = (format, inner, ratio) =>
+  const frameHTML = (format, inner, ratio, extra = "") =>
     `<div class="frame ${format === "vertical" ? "frame-vert" : "frame-wide"}"${ratio ? ` style="--ar:${ratio.toFixed(4)}"` : ""}>
        <span class="p p1"></span><span class="p p2"></span><span class="p p3"></span>
-       <div class="win">${inner}</div>
+       <div class="win">${inner}</div>${extra}
      </div>`;
   const placeholder = (format, title, label) =>
     `<div class="placeholder"><div>VIDEO ${label || (format === "vertical" ? "9:16" : "16:9")}<small>${esc(title)} — coming soon</small></div></div>`;
@@ -122,8 +122,9 @@
         : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
         `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)} with sound`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : "▶ PLAY WITH SOUND"}</span></button>` +
-        (proj ? `<span class="proj-badge">${esc(proj.name)} <b>${proj.count}</b></span>` : "");
-      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar)}</article>`;
+        (proj ? `<span class="proj-badge">${esc(proj.name)}</span>` : "");
+      const sticker = proj ? `<span class="clip-sticker" aria-hidden="true"><b>${proj.count}</b>CLIPS</span>` : "";
+      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar, sticker)}</article>`;
     };
     // rows with the same "Dự án" collapse into one project card; its clips get their own ◀ ▶ playlist
     const groups = new Map(), loose = [];
