@@ -138,7 +138,7 @@
       if (it.sound == null) it.sound = sec.id !== "led-visual";
       const k = Object.keys(D.previews || {}).find((x) => fold(x) === fold(it.title || ""));
       if (k && D.previews[k].frame) Object.assign(it, frameOf(D.previews[k].frame));
-      if (k) it.previewSrc = D.previews[k].src;
+      if (k) { it.previewSrc = D.previews[k].src; it.ytPad = D.previews[k].ytPad || 0; it.viewPreview = !!D.previews[k].viewer; }
     });
     // project card: a row of small thumbnails for the other clips, the last tile shows "+N"
     const strip = (proj) => {
@@ -405,7 +405,7 @@
     const it = list[pos];
     let v = parseVideo(it.video || it.src);
     // Drive squeezes very wide LED clips in its player: use the site's own copy (right shape) when there is one
-    if (it.previewSrc && (!v || v.kind === "drive")) v = { kind: "file", src: it.previewSrc };
+    if (it.previewSrc && (!v || v.kind === "drive" || it.viewPreview)) v = { kind: "file", src: it.previewSrc };
     player.innerHTML = v.kind === "file"
       ? `<video src="${esc(v.src)}" controls autoplay playsinline${v.src === it.previewSrc ? " muted loop" : ""}></video>`
       : `<iframe src="${v.embed}" title="${esc(it.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
@@ -434,11 +434,13 @@
       player.style.height = tall ? `${Math.round(Math.min(440, innerHeight * 0.6))}px` : "";
       return;
     }
-    const w = player.clientWidth, vh = w / ratioOf(list[pos]);
-    const h = Math.round(Math.max(56, w * 0.055));
+    const w = player.clientWidth, vh = w / ratioOf(list[pos]), pad = list[pos].ytPad;
+    // ytPad: the clip was uploaded inside a taller black frame (YouTube squeezes anything wider than 4:1);
+    // the iframe shows that whole frame, the box keeps only the real picture + the black strip with the controls
+    const h = pad ? Math.round((w / pad - vh) / 2) : Math.round(Math.max(56, w * 0.055));
     player.style.aspectRatio = "auto";
     player.style.height = `${vh + h + (player.offsetHeight - player.clientHeight)}px`;   // + borders
-    f.style.top = `${-h}px`; f.style.height = `${vh + 2 * h}px`;
+    f.style.top = `${-h}px`; f.style.height = `${pad ? w / pad : vh + 2 * h}px`;
   }
   addEventListener("resize", () => { if (!lb.hidden) cropPlayer(); });
   document.addEventListener("click", (e) => {

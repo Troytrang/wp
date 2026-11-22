@@ -40,7 +40,8 @@ window.PORTFOLIO = {
      "frame" sets the real size, so the card gets the right shape even if the sheet still says "Ngang".
      The card plays the loop; a click still opens the full video from the sheet link (Drive / YouTube). */
   previews: {
-    "VTC Booth at A80 2025": { src: "assets/led/a80-preview.mp4", poster: "assets/led/a80-preview.jpg", frame: "3200x384" }
+    "VTC Booth at A80 2025": { src: "assets/led/a80-preview.mp4", poster: "assets/led/a80-preview.jpg", frame: "3200x384",
+      viewer: "preview" }   // the YouTube copy is squeezed: show the highlight until the 3200×800 version is up, then use ytPad: 4
   },
 
   sections: [
