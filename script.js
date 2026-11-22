@@ -238,29 +238,39 @@
   function drawBolt() {
     const W = document.documentElement.clientWidth, H = document.body.scrollHeight;
     const phone = W < 700;
-    const half = phone ? W * 0.09 : Math.max(60, W * 0.075);   // half width of the band
-    const lo = phone ? 0.16 : 0.2, hi = phone ? 0.84 : 0.8;   // how far it swings left / right
-    const step = phone ? 520 : 640;                           // vertical distance per zig
-    // centre line: long diagonal, then at each turn a hard, almost flat jog back the other way
-    const pts = [[W * 0.66, -40]];
-    let y = 0, left = true;
-    while (y < H + step) {
-      y += step;
-      const x = W * (left ? lo : hi), dir = left ? 1 : -1;
-      pts.push([x, y], [x + dir * W * (phone ? 0.2 : 0.17), y + step * 0.05]);
-      left = !left;
+    // one block of the bolt, traced from Trang's sketch (x as share of the width, y as share of the block height):
+    // long diagonal down-left -> sharp point -> almost flat stroke across to the right -> point ->
+    // diagonal down-left -> point -> shallow stroke down-right -> point -> back to the start column
+    const P = [[0.65, 0], [0.2, 0.34], [0.93, 0.25], [0.36, 0.62], [0.9, 0.77], [0.65, 1]];
+    const HW = [0.028, 0.036, 0.048, 0.052, 0.04];               // half width of each stroke (share of width)
+    const blockH = Math.max(W * 1.05, 1000);
+    const pts = [], hw = [];
+    for (let k = 0, y0 = -blockH * 0.05; y0 < H + blockH; k++, y0 += blockH) {
+      P.forEach(([px, py], i) => { if (k && i === 0) return; pts.push([W * px, y0 + blockH * py]); });
+      HW.forEach((w) => hw.push(Math.max(phone ? 16 : 24, W * w)));
     }
-    // offset both sides along the true normal (mitred), so the band keeps its width and the corners stay razor-sharp
-    const off = (sign) => pts.map((p, i) => {
-      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
-      const n1 = norm(i > 0 ? a : p, i > 0 ? p : b), n2 = norm(i < pts.length - 1 ? p : a, i < pts.length - 1 ? b : p);
-      let mx = n1[0] + n2[0], my = n1[1] + n2[1];
-      const ml = Math.hypot(mx, my) || 1; mx /= ml; my /= ml;
-      const k = Math.min(3.2, 1 / Math.max(0.2, mx * n1[0] + my * n1[1]));   // mitre length, capped
-      return [p[0] + sign * mx * half * k, p[1] + sign * my * half * k];
-    });
-    function norm(p, q) { const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1; return [dy / l, -dx / l]; }
-    const L = off(1), R = off(-1).reverse();
+    // offset each stroke by its own width, then meet the neighbouring stroke's offset line -> razor-sharp points
+    const seg = (i, side) => {
+      const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+      const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy) || 1, nx = dy / l * side, ny = -dx / l * side, w = hw[i];
+      return [[x1 + nx * w, y1 + ny * w], [x2 + nx * w, y2 + ny * w]];
+    };
+    const meet = (a, b, fallback, cap) => {
+      const [[x1, y1], [x2, y2]] = a, [[x3, y3], [x4, y4]] = b;
+      const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+      if (Math.abs(den) < 1e-6) return fallback;
+      const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
+      const p = [x1 + t * (x2 - x1), y1 + t * (y2 - y1)];
+      const d = Math.hypot(p[0] - fallback[0], p[1] - fallback[1]);
+      return d > cap ? [fallback[0] + (p[0] - fallback[0]) * cap / d, fallback[1] + (p[1] - fallback[1]) * cap / d] : p;
+    };
+    const edge = (side) => {
+      const out = [seg(0, side)[0]];
+      for (let i = 1; i < pts.length - 1; i++) out.push(meet(seg(i - 1, side), seg(i, side), pts[i], hw[i] * 7));
+      out.push(seg(pts.length - 2, side)[1]);
+      return out;
+    };
+    const L = edge(1), R = edge(-1).reverse();
     const d = "M" + [...L, ...R].map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
     mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
     mb.setAttribute("height", H);
