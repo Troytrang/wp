@@ -238,26 +238,45 @@
   function drawBolt() {
     const W = document.documentElement.clientWidth, H = document.body.scrollHeight;
     const phone = W < 700;
-    const half = phone ? W * 0.09 : Math.max(60, W * 0.075);   // half width of the band
-    const lo = phone ? 0.2 : 0.28, hi = phone ? 0.8 : 0.72;   // how far it swings left / right
-    const step = phone ? 620 : 780;                           // vertical distance per zig
-    // centre line: alternate sides; each turn has a short flat "kick" like a lightning jog
-    const pts = [[W * 0.66, -40]];
-    let y = 0, left = true;
-    while (y < H + step) {
-      y += step;
-      const x = W * (left ? lo : hi);
-      pts.push([x, y - step * 0.12], [x + (left ? 1 : -1) * W * 0.07, y]);
-      left = !left;
+    // seeded random so the shape stays the same on every visit / resize
+    let s = 20011;
+    const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const rr = (a, b) => a + (b - a) * rnd();
+    // centre line: big diagonal swings across the page, uneven spacing
+    const nodes = [];
+    let y = -60, x = W * 0.62, side = -1;
+    while (y < H + 200) {
+      nodes.push({ x, y, w: W * (rnd() < 0.3 ? rr(0.02, 0.045) : rr(0.07, phone ? 0.16 : 0.25)) });
+      y += rr(phone ? 300 : 380, phone ? 520 : 700);
+      x = W * (0.5 + side * rr(0.12, phone ? 0.3 : 0.36));
+      side = -side;
     }
-    // thickness changes along the bolt: fat at some turns, thin at others (fixed pattern, so it doesn't jump on resize)
-    const pattern = [1.15, 0.55, 1.45, 0.8, 0.45, 1.3, 0.95, 0.5, 1.5, 0.7];
-    const wAt = (i) => half * pattern[i % pattern.length];
-    const L = pts.map(([x, y], i) => [x - wAt(i), y]), R = pts.map(([x, y], i) => [x + wAt(i) * (0.8 + (i % 3) * 0.15), y]).reverse();
-    const d = "M" + [...L, ...R].map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
+    const clampX = (v) => Math.max(-W * 0.08, Math.min(W * 1.08, v));
+    const L = [], R = [];
+    nodes.forEach((n, i) => {
+      L.push([n.x - n.w, n.y]);
+      R.push([n.x + n.w, n.y]);
+      const m = nodes[i + 1]; if (!m) return;
+      // jagged edges: sharp spikes thrown out between the turns, sometimes on both sides
+      for (const [edge, dir] of [[L, -1], [R, 1]]) {
+        const k = rnd();
+        if (k < 0.7) {
+          const t = rr(0.25, 0.75), mx = n.x + (m.x - n.x) * t, my = n.y + (m.y - n.y) * t;
+          const mw = n.w + (m.w - n.w) * t;
+          const reach = W * rr(0.1, phone ? 0.24 : 0.36);
+          edge.push([mx + dir * mw, my - rr(20, 60)]);
+          edge.push([clampX(mx + dir * (mw + reach)), my + rr(-120, 40)]);     // spike tip
+          edge.push([mx + dir * mw * rr(0.2, 0.7), my + rr(30, 90)]);           // notch back in
+        } else if (k < 0.85) {
+          const t = rr(0.3, 0.7), mx = n.x + (m.x - n.x) * t, my = n.y + (m.y - n.y) * t;
+          edge.push([mx + dir * W * rr(0.005, 0.02), my]);                      // pinch: thin neck
+        }
+      }
+    });
+    const d = "M" + [...L, ...R.reverse()].map(([px, py]) => `${clampX(px).toFixed(1)} ${py.toFixed(1)}`).join(" L") + " Z";
     mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
     mb.setAttribute("height", H);
-    mb.innerHTML = `<path class="shadow" d="${d}" transform="translate(16 16)"/><path class="edge" d="${d}"/><path class="core" d="${d}"/>`;
+    mb.innerHTML = `<path class="shadow" d="${d}" transform="translate(18 18)"/><path class="edge" d="${d}"/><path class="core" d="${d}"/>`;
   }
   drawBolt();
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) mb.classList.add("draw");
