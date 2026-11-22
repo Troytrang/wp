@@ -36,6 +36,13 @@ window.PORTFOLIO = {
     ]
   },
 
+  /* Short silent highlight loops kept on this site, matched by video name (the "Tên" in the sheet).
+     "frame" sets the real size, so the card gets the right shape even if the sheet still says "Ngang".
+     The card plays the loop; a click still opens the full video from the sheet link (Drive / YouTube). */
+  previews: {
+    "VTC Booth at A80 2025": { src: "assets/led/a80-preview.mp4", poster: "assets/led/a80-preview.jpg", frame: "3200x384" }
+  },
+
   sections: [
     {
       id: "game-ads",

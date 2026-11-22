@@ -120,7 +120,10 @@
       const v = parseVideo(it.video);
       const ar = ratioOf(it), cls = ar >= 4 ? " item-ultra item-pano" : ar >= 2.2 ? " item-ultra" : "";   // pano: LED walls like 6400×768
       if (!v) return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title, it.label), ar)}${caption(it.title)}</article>`;
-      const still = v.kind === "file"
+      const pre = (D.previews || {})[Object.keys(D.previews || {}).find((k) => fold(k) === fold(it.title || "")) || ""];
+      const still = pre
+        ? `<video class="thumb" data-src="${esc(pre.src)}"${pre.poster ? ` poster="${esc(pre.poster)}"` : ""} muted loop playsinline preload="none" aria-hidden="true"></video>`
+        : v.kind === "file"
         ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
         : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
@@ -131,7 +134,11 @@
     // event / video name, always visible under the frame
     const feed = sec.id === "game-ads";       // big volume: no names, clips play by themselves while scrolling
     const caption = (name, proj) => feed ? "" : `<p class="item-cap"><span>${esc(name)}</span>${proj ? `<b>${proj.count} CLIPS</b>` : ""}</p>`;
-    sec.items.forEach((it) => { if (it.sound == null) it.sound = sec.id !== "led-visual"; });
+    sec.items.forEach((it) => {
+      if (it.sound == null) it.sound = sec.id !== "led-visual";
+      const k = Object.keys(D.previews || {}).find((x) => fold(x) === fold(it.title || ""));
+      if (k && D.previews[k].frame) Object.assign(it, frameOf(D.previews[k].frame));
+    });
     // project card: a row of small thumbnails for the other clips, the last tile shows "+N"
     const strip = (proj) => {
       const clips = PLAYLISTS[proj.key], rest = clips.length - 1;
@@ -492,7 +499,8 @@
     if (reduce || pv.dataset.on) return;
     const v = parseVideo(pv.dataset.video); if (!v) return;
     pv.dataset.on = "1";
-    if (v.kind === "file") { const vid = pv.querySelector("video"); vid && vid.play().catch(() => {}); return; }
+    const vid = pv.querySelector("video.thumb");
+    if (vid) { if (vid.dataset.src && !vid.src) vid.src = vid.dataset.src; vid.play().catch(() => {}); return; }   // own loop: loads only now
     if (!v.loop) return;
     pv.insertAdjacentHTML("beforeend", loopMedia(v, "").replace("data-src=", "src="));
   }
