@@ -192,7 +192,9 @@ a { color: inherit; }
 .exp em { display: block; font-style: normal; font-weight: 600; }
 .chips { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin: 0 0 20px; }
 .chips li { border: 3px solid var(--blue-2); color: var(--blue-2); border-radius: 999px; padding: 2px 14px; font-weight: 700; }
-.ai { margin: 0; background: var(--yel); display: inline-block; padding: 4px 14px; border-radius: 999px; border: 3px solid var(--blue-2); font-weight: 700; }
+.chips li { white-space: nowrap; }
+.chips-ai { margin-bottom: 0; }
+.chips-ai li { background: var(--yel); }
 
 /* ---------- contact ---------- */
 .contact { position: relative; overflow: hidden; padding: clamp(90px, 12vw, 160px) clamp(18px, 6vw, 90px); margin-top: 60px; display: flex; flex-direction: column; align-items: flex-start; gap: 40px; }
@@ -374,9 +376,16 @@ main, .foot { position: relative; z-index: 1; }
 .pl-list li.on button .n::before { content: "▶ "; font-size: 10px; }
 .pl-credit { font: 600 12px var(--body); color: #777; padding: 6px 8px 2px; }
 @media (max-width: 700px) {
-  .player { left: 12px; bottom: 12px; gap: 8px; }
+  .player { left: 10px; right: 10px; bottom: 10px; gap: 8px; }
+  .music { padding: 0 12px; }
+  .music .music-label { display: none; }
+  .pl-bar { flex: 1; min-width: 0; height: 52px; padding: 0 8px; gap: 2px; }
+  .music { height: 52px; }
   .pl-vol, .pl-now span { display: none; }
-  .pl-now { width: 90px; }
+  .pl-now { flex: 1; min-width: 0; width: auto; margin-right: 4px; }
+  .pl-btn { width: 30px; height: 30px; }
+  .pl-main { width: 36px; height: 36px; }
+  .player:not(.on) .pl-bar { display: none; }
 }
 
 /* project cards: same frame as every other video + a strip of the other clips underneath */

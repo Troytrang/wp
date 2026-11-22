@@ -218,7 +218,7 @@
   /* ---------- about ---------- */
   $("#exp").innerHTML = D.experience.map((x) => `<li><b>${esc(x.company)}</b><span>${esc(x.years)}</span><em>${esc(x.role)}</em></li>`).join("");
   $("#soft").innerHTML = D.software.map((s) => `<li>${esc(s)}</li>`).join("");
-  $("#ai").textContent = D.ai.join(" • ");
+  $("#ai").innerHTML = D.ai.map((s) => `<li>${esc(s)}</li>`).join("");
   $("#stats").innerHTML = D.sections.filter((s) => s.stat).map((s) => `<span class="stat"><b>${esc(s.stat.value)}</b>${esc(s.stat.label)}</span>`).join("");
 
   /* ---------- contact ---------- */
