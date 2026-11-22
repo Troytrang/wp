@@ -244,12 +244,65 @@
     mBtn.insertAdjacentHTML("beforeend", '<span class="music-hint">♪ turn on music</span>');
     setTimeout(() => mBtn.querySelector(".music-hint")?.remove(), 7000);
   }
+  /* ---------- the page moves with the music: lightning + sticker kick on the beat, pixel column = equalizer ---------- */
+  let actx, analyser, freq, vizOn = false;
+  const root = document.documentElement, eq = document.createElement("canvas");
+  eq.className = "eq"; eq.setAttribute("aria-hidden", "true"); document.body.appendChild(eq);
+  const ectx = eq.getContext("2d");
+  function startViz() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    try {
+      if (!actx) {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = actx.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0.5;
+        actx.createMediaElementSource(bgm).connect(analyser); analyser.connect(actx.destination);
+        freq = new Uint8Array(analyser.frequencyBinCount);
+      }
+      actx.resume();
+    } catch (e) { return; }
+    if (!vizOn) { vizOn = true; requestAnimationFrame(tick); }
+  }
+  let kick = 0, avgBass = 0, prevBass = 0, lastBeat = 0;
+  const levels = [];
+  function tick(t) {
+    const playing = !bgm.paused && !document.hidden;
+    if (playing) analyser.getByteFrequencyData(freq); else freq.fill(0);
+    // beat: bass energy jumps clearly above its running average
+    let bass = 0; for (let i = 1; i < 8; i++) bass += freq[i]; bass /= 7 * 255;
+    avgBass = avgBass * 0.94 + bass * 0.06;
+    if (playing && bass > 0.22 && bass - prevBass > 0.03 && bass > avgBass * 1.06 && t - lastBeat > 220) { kick = 1; lastBeat = t; }
+    prevBass = bass;
+    kick *= 0.88; if (kick < 0.01) kick = 0;
+    root.style.setProperty("--kick", kick.toFixed(3));
+    drawEq(playing);
+    if (playing || kick || levels.some((l) => l > 0.01)) requestAnimationFrame(tick);
+    else { vizOn = false; root.style.setProperty("--kick", 0); ectx.clearRect(0, 0, eq.width, eq.height); }
+  }
+  function drawEq(playing) {
+    const w = eq.clientWidth, h = eq.clientHeight; if (!w) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    if (eq.width !== Math.round(w * dpr) || eq.height !== Math.round(h * dpr)) { eq.width = Math.round(w * dpr); eq.height = Math.round(h * dpr); }
+    ectx.setTransform(dpr, 0, 0, dpr, 0, 0); ectx.clearRect(0, 0, w, h);
+    const cols = 4, cell = w / cols, rows = Math.ceil(h / cell), n = freq.length * 0.7;
+    for (let r = 0; r < rows; r++) {
+      // bottom row = deep bass, top = treble (log scale)
+      const f = (rows - 1 - r) / Math.max(rows - 1, 1), a = Math.floor(2 + Math.pow(n, f * 0.98)), b = Math.max(a + 1, Math.floor(2 + Math.pow(n, (f + 1 / rows) * 0.98)));
+      let v = 0; for (let i = a; i < b && i < freq.length; i++) v = Math.max(v, freq[i]);
+      v = playing ? Math.pow(v / 255, 1.6) * (1 + f * 0.8) : 0;
+      levels[r] = Math.max(v, (levels[r] || 0) * 0.86);           // fall slowly, like a real meter
+      const lit = Math.min(cols, Math.round(levels[r] * cols));
+      for (let c = 0; c < lit; c++) {
+        ectx.fillStyle = c === lit - 1 && lit === cols ? "#ff3b3b" : (r + c) % 2 ? "#f9f000" : "#fff36b";
+        ectx.fillRect(w - (c + 1) * cell + 1, r * cell + 1, cell - 2, cell - 2);
+      }
+    }
+  }
   function setMusic(on) {
     musicOn = on;
     mBtn.setAttribute("aria-pressed", on);
     mBtn.setAttribute("aria-label", on ? "Pause background music" : "Play background music");
     mBtn.querySelector(".music-hint")?.remove();
-    if (on) bgm.play().catch(() => setMusic(false)); else bgm.pause();
+    if (on) { startViz(); bgm.play().catch(() => setMusic(false)); } else bgm.pause();
   }
   mBtn.addEventListener("click", () => setMusic(!musicOn));
 

@@ -363,3 +363,10 @@ main, .foot { position: relative; z-index: 1; }
 .mute-btn[aria-pressed="true"] { background: var(--yel); border-color: var(--blue-2); }
 .item.loud .p2 { background: var(--red); }
 .feed .more { visibility: hidden; height: 1px; padding: 0; margin: 0 auto; }
+
+/* music-reactive bits (driven by --kick, 0..1, set on every frame while music plays) */
+.eq { position: fixed; top: 0; right: 0; width: clamp(48px, 7vw, 110px); height: 100vh; z-index: 0; pointer-events: none; }
+.megabolt .core { stroke: var(--yel); stroke-linejoin: miter; stroke-width: calc(var(--kick, 0) * 22px); }
+.sticker.in .anim-1 { translate: 0 calc(var(--kick, 0) * -16px); scale: calc(1 + var(--kick, 0) * .04); }
+.sticker.in .anim-2 { translate: 0 calc(var(--kick, 0) * -9px); scale: calc(1 + var(--kick, 0) * .05); }
+@media (max-width: 700px) { .eq { display: none; } }
