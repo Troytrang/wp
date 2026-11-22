@@ -1,7 +1,9 @@
 /* =========================================================
    PORTFOLIO CONTENT — edit this file to add / change videos.
-   video: a YouTube link (watch?v=…, youtu.be/…, /shorts/…)
-          or a Vimeo link. Leave "" while the video is not up yet.
+   video: a YouTube link (watch?v=…, youtu.be/…, /shorts/…), a Vimeo link,
+          or a direct .mp4 / .webm file link. Leave "" while the video is not up yet.
+          Videos play muted and loop inside their frame; a click opens them with sound.
+   title / tags / year are not shown on the page (kept for screen readers and your notes).
    format: "vertical" (9:16) or "wide" (16:9)
    ========================================================= */
 window.PORTFOLIO = {

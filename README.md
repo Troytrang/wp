@@ -7,7 +7,7 @@ Edit **`data.js`**:
 - `showreel`: link to the main showreel.
 - each section (`game-ads`, `led-visual`, `brand-product`) has an `items` list.
   Each item: `title`, `tags`, `year`, `format` (`"vertical"` 9:16 or `"wide"` 16:9) and `video`.
-- `video` accepts YouTube links (watch, youtu.be, shorts) or Vimeo links. Leave `""` to show a "coming soon" frame.
+- `video` accepts YouTube links (watch, youtu.be, shorts), Vimeo links or direct .mp4/.webm links. Videos play muted on loop inside their frame; a click opens them with sound. Leave `""` to show a "coming soon" frame.
 
 ## Deploy
 1. Push this folder to a GitHub repo.

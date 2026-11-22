@@ -9,10 +9,18 @@
     let m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([\w-]{11})/);
     if (m) return { kind: "yt", id: m[1],
       embed: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1`,
+      loop: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0&playsinline=1&rel=0&modestbranding=1&disablekb=1`,
       thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
     m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-    if (m) return { kind: "vimeo", id: m[1], embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1`, thumb: null };
+    if (m) return { kind: "vimeo", id: m[1], embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1`,
+      loop: `https://player.vimeo.com/video/${m[1]}?background=1`, thumb: null };
+    if (/\.(mp4|webm|mov)(\?|#|$)/i.test(url)) return { kind: "file", src: url };
     return null;
+  }
+  // muted, looping preview that plays inside the frame
+  function loopMedia(v, title) {
+    if (v.kind === "file") return `<video class="thumb" src="${esc(v.src)}" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>`;
+    return `<iframe class="loop" data-src="${v.loop}" title="${esc(title)} (preview)" tabindex="-1" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
   }
   const frameHTML = (format, inner) =>
     `<div class="frame ${format === "vertical" ? "frame-vert" : "frame-wide"}">
@@ -57,15 +65,10 @@
        </button>`);
     const card = (it) => {
       const v = parseVideo(it.video);
-      const media = v ? `${v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : placeholder(it.format, it.title)}<span class="play"></span>`
-                      : placeholder(it.format, it.title);
-      const body = frameHTML(it.format, media);
-      const tags = [...(it.tags || []), it.year].filter(Boolean)
-        .map((t, k) => `<li class="${k === 0 ? "y" : ""}">${esc(t)}</li>`).join("");
-      const meta = `<div class="meta"><h4>${esc(it.title)}</h4>${it.note ? `<p class="note">★ ${esc(it.note)}</p>` : ""}<ul class="pills">${tags}</ul></div>`;
-      return `<article class="item reveal">${v
-        ? `<button class="open" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" aria-label="Play ${esc(it.title)}">${body}</button>`
-        : body}${meta}</article>`;
+      if (!v) return `<article class="item reveal" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title))}</article>`;
+      const media = loopMedia(v, it.title) +
+        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" aria-label="Play ${esc(it.title)} with sound"><span class="sound">▶ PLAY WITH SOUND</span></button>`;
+      return `<article class="item reveal" aria-label="${esc(it.title)}">${frameHTML(it.format, media)}</article>`;
     };
     const vert = sec.items.filter((x) => x.format === "vertical"), wide = sec.items.filter((x) => x.format !== "vertical");
     panels.insertAdjacentHTML("beforeend",
@@ -120,7 +123,9 @@
     if (b) {
       const v = parseVideo(b.dataset.video); if (!v) return;
       lastFocus = b;
-      player.innerHTML = `<iframe src="${v.embed}" title="${esc(b.dataset.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
+      player.innerHTML = v.kind === "file"
+        ? `<video src="${esc(v.src)}" controls autoplay playsinline></video>`
+        : `<iframe src="${v.embed}" title="${esc(b.dataset.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
       $("#lb-title").textContent = b.dataset.title;
       dialog.classList.toggle("vert", b.dataset.format === "vertical");
       lb.hidden = false; document.body.style.overflow = "hidden";
@@ -146,6 +151,13 @@
     document.querySelectorAll(".reveal:not(.on)").forEach((el) => io ? io.observe(el) : el.classList.add("on"));
   }
   observeReveals();
+
+  const vio = "IntersectionObserver" in window
+    ? new IntersectionObserver((es) => es.forEach((en) => {
+        if (en.isIntersecting && !en.target.src) { en.target.src = en.target.dataset.src; vio.unobserve(en.target); }
+      }), { rootMargin: "200px" })
+    : null;
+  document.querySelectorAll("iframe.loop[data-src]").forEach((f) => vio ? vio.observe(f) : (f.src = f.dataset.src));
 
   /* ---------- custom cursor ---------- */
   const cur = $("#cursor");
