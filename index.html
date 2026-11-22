@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luong Nguyen Thu Trang — Video Editor Portfolio</title>
+<meta name="description" content="Video Editor portfolio: game ads, LED visuals and brand & product videos.">
+<meta property="og:title" content="Luong Nguyen Thu Trang — Video Editor">
+<meta property="og:description" content="Game ads · LED visual · Brand & product">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="assets/star.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip" href="#work">Skip to work</a>
+
+<header class="topbar">
+  <a class="brand" href="#top" aria-label="Back to top"><img src="assets/star.svg" alt="" class="brand-star"> THU TRANG</a>
+  <nav aria-label="Main">
+    <a href="#showreel">Showreel</a>
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#contact" class="nav-cta">Contact</a>
+  </nav>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-name">
+    <div class="bolt" aria-hidden="true"></div>
+    <div class="halftone" aria-hidden="true"></div>
+    <div class="pixels" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <h1 id="hero-name" class="name-block">
+        <span class="nb nb-1">LƯƠNG NGUYỄN</span>
+        <span class="nb nb-2">THU TRANG</span>
+      </h1>
+      <div class="sticker" id="sticker" role="img" aria-label="Video Editor"></div>
+      <p class="strip">Game Advertising • LED Visual • Brand &amp; Product</p>
+      <div class="hero-cta">
+        <a class="btn btn-yellow" href="#showreel"><img src="assets/ic-play.svg" alt=""> Watch showreel</a>
+        <a class="btn btn-white" href="#work">See projects</a>
+      </div>
+    </div>
+    <img src="assets/star.svg" alt="" class="hero-star" aria-hidden="true">
+    <span class="arrow-deco a1" aria-hidden="true"></span>
+    <span class="arrow-deco a2" aria-hidden="true"></span>
+    <a href="#showreel" class="scroll-hint" aria-label="Scroll to showreel">SCROLL ↓</a>
+  </section>
+
+  <!-- SHOWREEL -->
+  <section id="showreel" class="block" aria-labelledby="sr-title">
+    <h2 id="sr-title" class="tag"><img src="assets/ic-play.svg" alt=""> SHOWREEL</h2>
+    <div class="frame frame-wide frame-lg reveal" id="showreel-frame"></div>
+  </section>
+
+  <!-- WORK -->
+  <section id="work" class="block" aria-labelledby="work-title">
+    <h2 id="work-title" class="tag"><img src="assets/ic-play.svg" alt=""> SELECTED WORK</h2>
+    <div class="tabs" role="tablist" aria-label="Categories" id="tabs"></div>
+    <div id="panels"></div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="block" aria-labelledby="about-title">
+    <h2 id="about-title" class="tag"><img src="assets/ic-play.svg" alt=""> ABOUT</h2>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p class="lead">Video Editor specializing in <b>game advertising</b> and <b>LED visual production</b>.</p>
+        <p>I create game promotional videos, gameplay edits, trailers and motion graphics for stage and event displays — from the first cut to the final LED render.</p>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div class="card reveal">
+        <h3 class="mini-tag">EXPERIENCE</h3>
+        <ul class="exp" id="exp"></ul>
+        <h3 class="mini-tag">SOFTWARE</h3>
+        <ul class="chips" id="soft"></ul>
+        <p class="ai"><b>AI TOOLS:</b> <span id="ai"></span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact" aria-labelledby="contact-title">
+    <div class="bolt bolt-2" aria-hidden="true"></div>
+    <h2 id="contact-title" class="name-block small">
+      <span class="nb nb-1">LET'S WORK</span>
+      <span class="nb nb-2">TOGETHER</span>
+    </h2>
+    <div class="contact-row">
+      <button class="pill" id="copy-mail" type="button"><img src="assets/ic-mail.svg" alt=""> <span id="mail-text"></span></button>
+      <a class="pill" id="phone" href="#"><span id="phone-text"></span></a>
+      <span class="pill"><img src="assets/ic-pin.svg" alt=""> <span id="loc-text"></span></span>
+    </div>
+    <p class="copied" id="copied" role="status" aria-live="polite"></p>
+  </section>
+</main>
+
+<footer class="foot">© <span id="yr"></span> Lương Nguyễn Thu Trang · Video Editor</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" hidden>
+  <div class="lb-backdrop" data-close></div>
+  <div class="lb-dialog" role="dialog" aria-modal="true" aria-labelledby="lb-title">
+    <button class="lb-close" type="button" data-close aria-label="Close">✕</button>
+    <div class="lb-player" id="lb-player"></div>
+    <p class="lb-title" id="lb-title"></p>
+  </div>
+</div>
+
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
