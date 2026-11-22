@@ -354,3 +354,12 @@ main, .foot { position: relative; z-index: 1; }
 .strip-more img { opacity: .25; }
 .strip-more span { position: relative; display: grid; place-items: center; height: 100%; font: 400 clamp(16px, 2vw, 26px) var(--display); color: var(--blue-2); }
 .frame-vert ~ .clip-strip { --n: 3 !important; }
+
+/* Game Ads feed: clips play while scrolling; a sound button sits on each card */
+.mute-btn { position: absolute; right: 10px; top: 10px; z-index: 3; width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid var(--white); background: var(--ink); color: var(--white); font-size: 19px; line-height: 1; cursor: pointer;
+  box-shadow: 3px 3px 0 var(--blue-2); transition: transform .15s; }
+.mute-btn:hover { transform: scale(1.1); }
+.mute-btn[aria-pressed="true"] { background: var(--yel); border-color: var(--blue-2); }
+.item.loud .p2 { background: var(--red); }
+.feed .more { visibility: hidden; height: 1px; padding: 0; margin: 0 auto; }

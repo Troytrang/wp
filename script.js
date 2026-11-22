@@ -63,7 +63,7 @@
     let m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([\w-]{11})/);
     if (m) return { kind: "yt", id: m[1],
       embed: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1`,
-      loop: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0&playsinline=1&rel=0&modestbranding=1&disablekb=1`,
+      loop: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0&playsinline=1&rel=0&modestbranding=1&disablekb=1&enablejsapi=1`,
       thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
     m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
     if (m) return { kind: "vimeo", id: m[1], embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1`,
@@ -124,11 +124,13 @@
         ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
         : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
-        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)}${it.sound ? " with sound" : ""}`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : it.sound ? "▶ PLAY WITH SOUND" : "▶ PLAY"}</span></button>`;
+        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)}${it.sound ? " with sound" : ""}`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : feed ? "⤢ EXPAND" : it.sound ? "▶ PLAY WITH SOUND" : "▶ PLAY"}</span></button>` +
+        (feed && it.sound && v.kind !== "drive" ? `<button class="mute-btn" type="button" aria-pressed="false" aria-label="Turn sound on for ${esc(it.title)}">🔇</button>` : "");
       return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar)}${caption(proj ? proj.name : it.title, proj)}${proj ? strip(proj) : ""}</article>`;
     };
     // event / video name, always visible under the frame
-    const caption = (name, proj) => `<p class="item-cap"><span>${esc(name)}</span>${proj ? `<b>${proj.count} CLIPS</b>` : ""}</p>`;
+    const feed = sec.id === "game-ads";       // big volume: no names, clips play by themselves while scrolling
+    const caption = (name, proj) => feed ? "" : `<p class="item-cap"><span>${esc(name)}</span>${proj ? `<b>${proj.count} CLIPS</b>` : ""}</p>`;
     sec.items.forEach((it) => { if (it.sound == null) it.sound = sec.id !== "led-visual"; });
     // project card: a row of small thumbnails for the other clips, the last tile shows "+N"
     const strip = (proj) => {
@@ -179,7 +181,7 @@
           wide = indexed.filter((x) => x.it.format !== "vertical" && ratioOf(x.it) < 2.2),
           ultra = indexed.filter((x) => x.it.format !== "vertical" && ratioOf(x.it) >= 2.2);   // very wide LED walls get their own full-width row
     panels.insertAdjacentHTML("beforeend",
-      `<div class="panel" role="tabpanel" id="panel-${sec.id}" aria-labelledby="tab-${sec.id}" ${i ? "hidden" : ""}>
+      `<div class="panel${sec.id === "game-ads" ? " feed" : ""}" role="tabpanel" id="panel-${sec.id}" aria-labelledby="tab-${sec.id}" ${i ? "hidden" : ""}>
          <div class="panel-head">
            <h3 class="panel-title name-block"><span class="nb nb-1">${esc(sec.title[0])}</span><span class="nb nb-2">${esc(sec.title[1])}</span></h3>
            <div class="panel-side"><p>${esc(sec.blurb)}</p>${sec.stat ? `<span class="stat"><b>${esc(sec.stat.value)}</b>${esc(sec.stat.label)}</span>` : ""}</div>
@@ -291,6 +293,7 @@
       lastFocus = b;
       list = b.dataset.list ? PLAYLISTS[b.dataset.list] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
       show(b.dataset.list ? +b.dataset.idx : 0);
+      document.querySelectorAll('.mute-btn[aria-pressed="true"]').forEach((m) => setMute(m, true));
       lb.hidden = false; document.body.style.overflow = "hidden"; cropPlayer();
       $(".lb-close").focus();
     }
@@ -353,6 +356,8 @@
   function stopPreview(pv) {
     if (!pv.dataset.on) return;
     delete pv.dataset.on;
+    const mbtn = pv.closest(".win").querySelector(".mute-btn");
+    if (mbtn) setMute(mbtn, true);
     const vid = pv.querySelector("video"); if (vid) vid.pause();
     pv.querySelectorAll("iframe").forEach((f) => f.remove());
   }
@@ -360,10 +365,15 @@
     ? new IntersectionObserver((es) => es.forEach((en) => en.isIntersecting ? startPreview(en.target) : stopPreview(en.target)),
         { rootMargin: "-35% 0px -35% 0px" })          // only the card in the middle band of the screen plays
     : null;
+  // Game Ads feed: every clip that is mostly on screen plays (muted), and stops once it scrolls away
+  const feedIO = "IntersectionObserver" in window
+    ? new IntersectionObserver((es) => es.forEach((en) => en.isIntersecting ? startPreview(en.target) : stopPreview(en.target)), { threshold: 0.55 })
+    : null;
   function watchPreviews() {
     document.querySelectorAll(".item:not([hidden]) .pv:not([data-w])").forEach((pv) => {
       pv.dataset.w = "1";
-      if (hoverable) {
+      if (feedIO && pv.closest(".feed")) feedIO.observe(pv);
+      else if (hoverable) {
         const item = pv.closest(".item");
         item.addEventListener("pointerenter", () => startPreview(pv));
         item.addEventListener("pointerleave", () => stopPreview(pv));
@@ -373,6 +383,31 @@
     });
   }
   watchPreviews();
+
+  // sound on/off right inside a feed card (one clip with sound at a time)
+  function setMute(btn, mute) {
+    const win = btn.closest(".win"), f = win.querySelector(".pv iframe"), vid = win.querySelector(".pv video");
+    if (f) f.contentWindow?.postMessage(JSON.stringify({ event: "command", func: mute ? "mute" : "unMute", args: [] }), "*");
+    if (!mute && f) f.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [100] }), "*");
+    if (vid) vid.muted = mute;
+    btn.setAttribute("aria-pressed", String(!mute)); btn.textContent = mute ? "🔇" : "🔊";
+    btn.closest(".item").classList.toggle("loud", !mute);
+  }
+  panels.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mute-btn"); if (!btn) return;
+    const turnOn = btn.getAttribute("aria-pressed") !== "true";
+    document.querySelectorAll('.mute-btn[aria-pressed="true"]').forEach((b) => b !== btn && setMute(b, true));
+    startPreview(btn.closest(".win").querySelector(".pv"));
+    setTimeout(() => setMute(btn, !turnOn), 0);
+    if (turnOn && musicOn && !pausedForVideo) { bgm.pause(); pausedForVideo = true; }
+    if (!turnOn && pausedForVideo && lb.hidden) { bgm.play().catch(() => {}); pausedForVideo = false; }
+  });
+
+  // feed: the next batch loads by itself when the visitor nears the end of the grid
+  if ("IntersectionObserver" in window) {
+    const moreIO = new IntersectionObserver((es) => es.forEach((en) => en.isIntersecting && en.target.isConnected && en.target.click()), { rootMargin: "0px 0px 700px 0px" });
+    document.querySelectorAll(".feed [data-more]").forEach((b) => moreIO.observe(b));
+  }
 
   /* ---------- page-long lightning bolt ---------- */
   const mb = $("#megabolt");
