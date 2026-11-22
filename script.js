@@ -258,7 +258,7 @@
       const [a, b] = [pts[1], pts[2]];
       const yAt = (x) => a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
       const need = bottom + hw[1] - Math.min(yAt(r.left), yAt(Math.min(right, b[0])));
-      if (need > 0) { a[1] += need; b[1] += need; }
+      if (need > 0) for (let i = 1; i < pts.length; i++) pts[i][1] += need;   // move the rest of the bolt down too, so its angles stay the same and strokes never overlap
     }
     // offset each stroke by its own width, then meet the neighbouring stroke's offset line -> razor-sharp points
     const seg = (i, side) => {
