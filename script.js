@@ -275,7 +275,7 @@
     const d = "M" + [...L, ...R].map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
     mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
     mb.setAttribute("height", H);
-    mb.innerHTML = `<path class="shadow" d="${d}" transform="translate(16 16)"/><path class="edge" d="${d}"/><path class="core" d="${d}"/>`;
+    mb.innerHTML = `<path class="core" d="${d}"/>`;   // flat colour: no outline, no shadow
   }
   drawBolt();
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) mb.classList.add("draw");
