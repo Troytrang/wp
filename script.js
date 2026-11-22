@@ -250,7 +250,10 @@
       pts.push([x, y - step * 0.12], [x + (left ? 1 : -1) * W * 0.07, y]);
       left = !left;
     }
-    const L = pts.map(([x, y]) => [x - half, y]), R = pts.map(([x, y]) => [x + half, y]).reverse();
+    // thickness changes along the bolt: fat at some turns, thin at others (fixed pattern, so it doesn't jump on resize)
+    const pattern = [1.15, 0.55, 1.45, 0.8, 0.45, 1.3, 0.95, 0.5, 1.5, 0.7];
+    const wAt = (i) => half * pattern[i % pattern.length];
+    const L = pts.map(([x, y], i) => [x - wAt(i), y]), R = pts.map(([x, y], i) => [x + wAt(i) * (0.8 + (i % 3) * 0.15), y]).reverse();
     const d = "M" + [...L, ...R].map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
     mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
     mb.setAttribute("height", H);
