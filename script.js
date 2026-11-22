@@ -215,6 +215,17 @@
     });
   });
 
+  /* ---------- "best on desktop" note: phones and tablets, once per visitor ---------- */
+  (() => {
+    const note = $("#view-note"); let seen = false;
+    try { seen = localStorage.getItem("view-note") === "1"; } catch (e) {}
+    if (seen || !matchMedia("(max-width: 1024px), (pointer: coarse)").matches || matchMedia("(pointer: fine)").matches && innerWidth > 1024) return;
+    setTimeout(() => { note.hidden = false; }, 1200);
+    const hide = () => { note.hidden = true; try { localStorage.setItem("view-note", "1"); } catch (e) {} };
+    note.querySelector("button").addEventListener("click", hide);
+    setTimeout(hide, 12000);
+  })();
+
   /* ---------- about ---------- */
   $("#exp").innerHTML = D.experience.map((x) => `<li><b>${esc(x.company)}</b><span>${esc(x.years)}</span><em>${esc(x.role)}</em></li>`).join("");
   $("#soft").innerHTML = D.software.map((s) => `<li>${esc(s)}</li>`).join("");
