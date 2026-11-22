@@ -233,6 +233,33 @@
   }
   watchPreviews();
 
+  /* ---------- page-long lightning bolt ---------- */
+  const mb = $("#megabolt");
+  function drawBolt() {
+    const W = document.documentElement.clientWidth, H = document.body.scrollHeight;
+    const phone = W < 700;
+    const half = phone ? W * 0.09 : Math.max(60, W * 0.075);   // half width of the band
+    const lo = phone ? 0.2 : 0.28, hi = phone ? 0.8 : 0.72;   // how far it swings left / right
+    const step = phone ? 620 : 780;                           // vertical distance per zig
+    // centre line: alternate sides; each turn has a short flat "kick" like a lightning jog
+    const pts = [[W * 0.66, -40]];
+    let y = 0, left = true;
+    while (y < H + step) {
+      y += step;
+      const x = W * (left ? lo : hi);
+      pts.push([x, y - step * 0.12], [x + (left ? 1 : -1) * W * 0.07, y]);
+      left = !left;
+    }
+    const L = pts.map(([x, y]) => [x - half, y]), R = pts.map(([x, y]) => [x + half, y]).reverse();
+    const d = "M" + [...L, ...R].map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
+    mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    mb.setAttribute("height", H);
+    mb.innerHTML = `<path class="shadow" d="${d}" transform="translate(16 16)"/><path class="edge" d="${d}"/><path class="core" d="${d}"/>`;
+  }
+  drawBolt();
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) mb.classList.add("draw");
+  let bt; new ResizeObserver(() => { clearTimeout(bt); bt = setTimeout(drawBolt, 120); }).observe(document.body);
+
   /* ---------- custom cursor ---------- */
   const cur = $("#cursor");
   if (matchMedia("(pointer: fine)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
