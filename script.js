@@ -215,6 +215,41 @@
     if (focus) btn.focus();
     observeReveals(); watchPreviews();
   }
+  /* ---------- hand-drawn circle that goes round the tabs (5 s each) so visitors notice the other categories ---------- */
+  (() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    tabs.style.position = "relative";
+    tabs.insertAdjacentHTML("beforeend", `<svg class="tab-ring" aria-hidden="true"><path pathLength="1"/></svg>`);
+    const ring = tabs.querySelector(".tab-ring");
+    let k = 0, timer = null, stopped = false, visible = false;
+    function place() {
+      const b = tabBtns[k], r = b.getBoundingClientRect(), p = tabs.getBoundingClientRect();
+      ring.style.left = `${r.left - p.left - 26}px`; ring.style.top = `${r.top - p.top - 22}px`;
+      const w = r.width + 52, h = r.height + 44;
+      ring.style.width = `${w}px`; ring.style.height = `${h}px`; ring.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      // a loose marker loop drawn in real pixels (so the stroke keeps one thickness), ending past its start
+      const X = (v) => (v / 100 * w).toFixed(1), Y = (v) => (v / 40 * h).toFixed(1);
+      ring.querySelector("path").setAttribute("d",
+        `M${X(10)} ${Y(24)}C${X(7)} ${Y(9)} ${X(52)} ${Y(3)} ${X(86)} ${Y(7)}C${X(99)} ${Y(9)} ${X(100)} ${Y(22)} ${X(92)} ${Y(29)}` +
+        `C${X(78)} ${Y(40)} ${X(26)} ${Y(40)} ${X(12)} ${Y(32)}C${X(3)} ${Y(27)} ${X(5)} ${Y(15)} ${X(22)} ${Y(10)}`);
+      ring.style.rotate = `${(k % 2 ? 2 : -2.5)}deg`;
+    }
+    function draw() {
+      if (stopped || !visible) return;
+      place();
+      ring.classList.remove("on"); void ring.getBoundingClientRect(); ring.classList.add("on");   // restart the draw animation
+      timer = setTimeout(() => { ring.classList.add("out"); timer = setTimeout(() => { ring.classList.remove("out"); k = (k + 1) % tabBtns.length; draw(); }, 350); }, 5000);
+    }
+    const stop = () => { stopped = true; clearTimeout(timer); ring.classList.remove("on"); };
+    tabBtns.forEach((b) => b.addEventListener("click", stop));          // once someone uses the tabs, the hint has done its job
+    new IntersectionObserver(([en]) => {
+      visible = en.isIntersecting;
+      if (visible && !stopped && !timer) draw();
+      if (!visible) { clearTimeout(timer); timer = null; ring.classList.remove("on", "out"); }
+    }, { threshold: 0.6 }).observe(tabs);
+    addEventListener("resize", () => { if (ring.classList.contains("on")) place(); });
+  })();
+
   tabBtns.forEach((b, i) => {
     b.addEventListener("click", () => select(b));
     b.addEventListener("keydown", (e) => {
