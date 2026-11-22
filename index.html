@@ -15,6 +15,7 @@
 </head>
 <body>
 <a class="skip" href="#work">Skip to work</a>
+<div class="pixels" aria-hidden="true"></div>
 
 <header class="topbar">
   <a class="brand" href="#top" aria-label="Back to top"><img src="assets/star.svg" alt="" class="brand-star"> THU TRANG</a>
@@ -31,7 +32,6 @@
   <section class="hero" aria-labelledby="hero-name">
     <div class="bolt" aria-hidden="true"></div>
     <div class="halftone" aria-hidden="true"></div>
-    <div class="pixels" aria-hidden="true"></div>
 
     <div class="hero-inner">
       <h1 id="hero-name" class="name-block">
@@ -108,8 +108,10 @@
   <div class="lb-backdrop" data-close></div>
   <div class="lb-dialog" role="dialog" aria-modal="true" aria-labelledby="lb-title">
     <button class="lb-close" type="button" data-close aria-label="Close">✕</button>
+    <button class="lb-nav lb-prev" type="button" data-prev aria-label="Previous video">◀</button>
     <div class="lb-player" id="lb-player"></div>
-    <p class="lb-title" id="lb-title"></p>
+    <button class="lb-nav lb-next" type="button" data-next aria-label="Next video">▶</button>
+    <p class="lb-title"><span id="lb-title"></span> <span class="lb-count" id="lb-count"></span></p>
   </div>
 </div>
 

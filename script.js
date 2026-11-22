@@ -57,36 +57,60 @@
        : placeholder("wide", "Showreel"))}</div>`;
 
   /* ---------- tabs + panels ---------- */
+  const PAGE = 6;                 // cards shown per grid before "LOAD MORE"
+  const PLAYLISTS = {};
   const tabs = $("#tabs"), panels = $("#panels");
   D.sections.forEach((sec, i) => {
     tabs.insertAdjacentHTML("beforeend",
       `<button class="tab" role="tab" id="tab-${sec.id}" aria-controls="panel-${sec.id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">
          <span class="num">${sec.num}</span><img src="${sec.icon}" alt="">${esc(sec.title.join(" "))}
        </button>`);
-    const card = (it) => {
+    const card = (it, k) => {
       const v = parseVideo(it.video);
       if (!v) return `<article class="item reveal" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title))}</article>`;
-      const media = loopMedia(v, it.title) +
-        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" aria-label="Play ${esc(it.title)} with sound"><span class="sound">▶ PLAY WITH SOUND</span></button>`;
+      const still = v.kind === "file"
+        ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
+        : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
+      const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
+        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-sec="${sec.id}" data-idx="${k}" aria-label="Play ${esc(it.title)} with sound"><span class="sound">▶ PLAY WITH SOUND</span></button>`;
       return `<article class="item reveal" aria-label="${esc(it.title)}">${frameHTML(it.format, media)}</article>`;
     };
-    const vert = sec.items.filter((x) => x.format === "vertical"), wide = sec.items.filter((x) => x.format !== "vertical");
+    // index inside the section's playlist (items that have a video), used by the viewer's ◀ ▶
+    let n = 0;
+    const indexed = sec.items.map((it) => ({ it, k: parseVideo(it.video) ? n++ : -1 }));
+    PLAYLISTS[sec.id] = sec.items.filter((it) => parseVideo(it.video));
+    const grid = (list, cls) => {
+      if (!list.length) return "";
+      const html = list.map(({ it, k }, m) => card(it, k).replace('<article class="item', `<article ${m >= PAGE ? "hidden " : ""}class="item`)).join("");
+      const more = list.length > PAGE ? `<button class="btn btn-white more" type="button" data-more>LOAD MORE <span>(${list.length - PAGE})</span></button>` : "";
+      return `<div class="grid ${cls}">${html}</div>${more}`;
+    };
+    const vert = indexed.filter((x) => x.it.format === "vertical"), wide = indexed.filter((x) => x.it.format !== "vertical");
     panels.insertAdjacentHTML("beforeend",
       `<div class="panel" role="tabpanel" id="panel-${sec.id}" aria-labelledby="tab-${sec.id}" ${i ? "hidden" : ""}>
          <div class="panel-head">
            <h3 class="panel-title name-block"><span class="nb nb-1">${esc(sec.title[0])}</span><span class="nb nb-2">${esc(sec.title[1])}</span></h3>
            <div class="panel-side"><p>${esc(sec.blurb)}</p>${sec.stat ? `<span class="stat"><b>${esc(sec.stat.value)}</b>${esc(sec.stat.label)}</span>` : ""}</div>
          </div>
-         ${vert.length ? `<div class="grid grid-vert">${vert.map(card).join("")}</div>` : ""}
-         ${wide.length ? `<div class="grid grid-wide">${wide.map(card).join("")}</div>` : ""}
+         ${grid(vert, "grid-vert")}
+         ${grid(wide, "grid-wide")}
        </div>`);
+  });
+  // "LOAD MORE": reveal the next PAGE cards of that grid
+  panels.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-more]"); if (!b) return;
+    const hiddenCards = [...b.previousElementSibling.querySelectorAll(".item[hidden]")];
+    hiddenCards.slice(0, PAGE).forEach((c) => (c.hidden = false));
+    const left = hiddenCards.length - PAGE;
+    if (left > 0) b.querySelector("span").textContent = `(${left})`; else b.remove();
+    observeReveals(); watchPreviews();
   });
   const tabBtns = [...tabs.querySelectorAll(".tab")];
   function select(btn, focus) {
     tabBtns.forEach((b) => { const on = b === btn; b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1;
       $("#" + b.getAttribute("aria-controls")).hidden = !on; });
     if (focus) btn.focus();
-    observeReveals();
+    observeReveals(); watchPreviews();
   }
   tabBtns.forEach((b, i) => {
     b.addEventListener("click", () => select(b));
@@ -115,23 +139,32 @@
     setTimeout(() => ($("#copied").textContent = ""), 2200);
   });
 
-  /* ---------- lightbox ---------- */
+  /* ---------- lightbox (◀ ▶ through the section) ---------- */
   const lb = $("#lightbox"), player = $("#lb-player"), dialog = $(".lb-dialog");
-  let lastFocus = null;
+  let lastFocus = null, list = [], pos = 0;
+  function show(p) {
+    pos = (p + list.length) % list.length;
+    const it = list[pos], v = parseVideo(it.video || it.src);
+    player.innerHTML = v.kind === "file"
+      ? `<video src="${esc(v.src)}" controls autoplay playsinline></video>`
+      : `<iframe src="${v.embed}" title="${esc(it.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
+    $("#lb-title").textContent = it.title;
+    $("#lb-count").textContent = list.length > 1 ? `${pos + 1} / ${list.length}` : "";
+    dialog.classList.toggle("vert", it.format === "vertical");
+    dialog.classList.toggle("single", list.length < 2);
+  }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button.open[data-video]");
     if (b) {
-      const v = parseVideo(b.dataset.video); if (!v) return;
       lastFocus = b;
-      player.innerHTML = v.kind === "file"
-        ? `<video src="${esc(v.src)}" controls autoplay playsinline></video>`
-        : `<iframe src="${v.embed}" title="${esc(b.dataset.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
-      $("#lb-title").textContent = b.dataset.title;
-      dialog.classList.toggle("vert", b.dataset.format === "vertical");
+      list = b.dataset.sec ? PLAYLISTS[b.dataset.sec] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format }];
+      show(b.dataset.sec ? +b.dataset.idx : 0);
       lb.hidden = false; document.body.style.overflow = "hidden";
       $(".lb-close").focus();
     }
     if (e.target.closest("[data-close]")) close();
+    if (e.target.closest("[data-prev]")) show(pos - 1);
+    if (e.target.closest("[data-next]")) show(pos + 1);
   });
   function close() {
     if (lb.hidden) return;
@@ -139,8 +172,22 @@
     if (lastFocus) lastFocus.focus();
   }
   document.addEventListener("keydown", (e) => {
+    if (lb.hidden) return;
     if (e.key === "Escape") close();
-    if (e.key === "Tab" && !lb.hidden) { e.preventDefault(); $(".lb-close").focus(); }
+    if (e.key === "ArrowRight" && list.length > 1) show(pos + 1);
+    if (e.key === "ArrowLeft" && list.length > 1) show(pos - 1);
+    if (e.key === "Tab") {           // keep focus inside the viewer
+      const f = [...dialog.querySelectorAll("button:not([hidden])")].filter((x) => x.offsetParent);
+      const i = f.indexOf(document.activeElement);
+      e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+    }
+  });
+  let sx = null;                     // swipe on phones
+  dialog.addEventListener("touchstart", (e) => { sx = e.touches[0].clientX; }, { passive: true });
+  dialog.addEventListener("touchend", (e) => {
+    if (sx === null || list.length < 2) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 50) show(pos + (dx < 0 ? 1 : -1));
   });
 
   /* ---------- reveal on scroll ---------- */
@@ -152,12 +199,39 @@
   }
   observeReveals();
 
-  const vio = "IntersectionObserver" in window
-    ? new IntersectionObserver((es) => es.forEach((en) => {
-        if (en.isIntersecting && !en.target.src) { en.target.src = en.target.dataset.src; vio.unobserve(en.target); }
-      }), { rootMargin: "200px" })
+  /* ---------- looping previews ---------- */
+  const hoverable = matchMedia("(hover: hover)").matches;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function startPreview(pv) {
+    if (reduce || pv.dataset.on) return;
+    const v = parseVideo(pv.dataset.video); if (!v) return;
+    pv.dataset.on = "1";
+    if (v.kind === "file") { const vid = pv.querySelector("video"); vid && vid.play().catch(() => {}); return; }
+    pv.insertAdjacentHTML("beforeend", loopMedia(v, "").replace("data-src=", "src="));
+  }
+  function stopPreview(pv) {
+    if (!pv.dataset.on) return;
+    delete pv.dataset.on;
+    const vid = pv.querySelector("video"); if (vid) vid.pause();
+    pv.querySelectorAll("iframe").forEach((f) => f.remove());
+  }
+  const centreIO = !hoverable && "IntersectionObserver" in window
+    ? new IntersectionObserver((es) => es.forEach((en) => en.isIntersecting ? startPreview(en.target) : stopPreview(en.target)),
+        { rootMargin: "-35% 0px -35% 0px" })          // only the card in the middle band of the screen plays
     : null;
-  document.querySelectorAll("iframe.loop[data-src]").forEach((f) => vio ? vio.observe(f) : (f.src = f.dataset.src));
+  function watchPreviews() {
+    document.querySelectorAll(".item:not([hidden]) .pv:not([data-w])").forEach((pv) => {
+      pv.dataset.w = "1";
+      if (hoverable) {
+        const item = pv.closest(".item");
+        item.addEventListener("pointerenter", () => startPreview(pv));
+        item.addEventListener("pointerleave", () => stopPreview(pv));
+        item.addEventListener("focusin", () => startPreview(pv));
+        item.addEventListener("focusout", () => stopPreview(pv));
+      } else if (centreIO) centreIO.observe(pv);
+    });
+  }
+  watchPreviews();
 
   /* ---------- custom cursor ---------- */
   const cur = $("#cursor");
