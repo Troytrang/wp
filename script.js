@@ -151,7 +151,7 @@
   const cur = $("#cursor");
   if (matchMedia("(pointer: fine)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
     addEventListener("pointermove", (e) => {
-      cur.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; cur.style.opacity = 1;
+      cur.style.translate = `${e.clientX}px ${e.clientY}px`; cur.style.opacity = 1;
       cur.classList.toggle("big", !!e.target.closest("a, button"));
     }, { passive: true });
   } else cur.remove();
