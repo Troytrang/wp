@@ -239,18 +239,28 @@
     const W = document.documentElement.clientWidth, H = document.body.scrollHeight;
     const phone = W < 700;
     const half = phone ? W * 0.09 : Math.max(60, W * 0.075);   // half width of the band
-    const lo = phone ? 0.2 : 0.28, hi = phone ? 0.8 : 0.72;   // how far it swings left / right
-    const step = phone ? 620 : 780;                           // vertical distance per zig
-    // centre line: alternate sides; each turn has a short flat "kick" like a lightning jog
+    const lo = phone ? 0.16 : 0.2, hi = phone ? 0.84 : 0.8;   // how far it swings left / right
+    const step = phone ? 520 : 640;                           // vertical distance per zig
+    // centre line: long diagonal, then at each turn a hard, almost flat jog back the other way
     const pts = [[W * 0.66, -40]];
     let y = 0, left = true;
     while (y < H + step) {
       y += step;
-      const x = W * (left ? lo : hi);
-      pts.push([x, y - step * 0.12], [x + (left ? 1 : -1) * W * 0.07, y]);
+      const x = W * (left ? lo : hi), dir = left ? 1 : -1;
+      pts.push([x, y], [x + dir * W * (phone ? 0.2 : 0.17), y + step * 0.05]);
       left = !left;
     }
-    const L = pts.map(([x, y]) => [x - half, y]), R = pts.map(([x, y]) => [x + half, y]).reverse();
+    // offset both sides along the true normal (mitred), so the band keeps its width and the corners stay razor-sharp
+    const off = (sign) => pts.map((p, i) => {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+      const n1 = norm(i > 0 ? a : p, i > 0 ? p : b), n2 = norm(i < pts.length - 1 ? p : a, i < pts.length - 1 ? b : p);
+      let mx = n1[0] + n2[0], my = n1[1] + n2[1];
+      const ml = Math.hypot(mx, my) || 1; mx /= ml; my /= ml;
+      const k = Math.min(3.2, 1 / Math.max(0.2, mx * n1[0] + my * n1[1]));   // mitre length, capped
+      return [p[0] + sign * mx * half * k, p[1] + sign * my * half * k];
+    });
+    function norm(p, q) { const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1; return [dy / l, -dx / l]; }
+    const L = off(1), R = off(-1).reverse();
     const d = "M" + [...L, ...R].map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
     mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
     mb.setAttribute("height", H);
