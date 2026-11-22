@@ -246,32 +246,22 @@
     const nodes = [];
     let y = -60, x = W * 0.62, side = -1;
     while (y < H + 200) {
-      nodes.push({ x, y, w: W * (rnd() < 0.3 ? rr(0.02, 0.045) : rr(0.07, phone ? 0.16 : 0.25)) });
+      nodes.push({ x, y, w: W * (rnd() < 0.3 ? rr(0.035, 0.06) : rr(0.07, phone ? 0.14 : 0.18)) });
       y += rr(phone ? 300 : 380, phone ? 520 : 700);
-      x = W * (0.5 + side * rr(0.12, phone ? 0.3 : 0.36));
+      x = W * (0.5 + side * rr(0.14, phone ? 0.24 : 0.27));
       side = -side;
     }
     const clampX = (v) => Math.max(-W * 0.08, Math.min(W * 1.08, v));
+    // ONE bolt: clean straight edges, width changing segment to segment,
+    // and at every turn the outer corner shoots out into a sharp point (a lightning "elbow")
     const L = [], R = [];
     nodes.forEach((n, i) => {
-      L.push([n.x - n.w, n.y]);
-      R.push([n.x + n.w, n.y]);
-      const m = nodes[i + 1]; if (!m) return;
-      // jagged edges: sharp spikes thrown out between the turns, sometimes on both sides
-      for (const [edge, dir] of [[L, -1], [R, 1]]) {
-        const k = rnd();
-        if (k < 0.7) {
-          const t = rr(0.25, 0.75), mx = n.x + (m.x - n.x) * t, my = n.y + (m.y - n.y) * t;
-          const mw = n.w + (m.w - n.w) * t;
-          const reach = W * rr(0.1, phone ? 0.24 : 0.36);
-          edge.push([mx + dir * mw, my - rr(20, 60)]);
-          edge.push([clampX(mx + dir * (mw + reach)), my + rr(-120, 40)]);     // spike tip
-          edge.push([mx + dir * mw * rr(0.2, 0.7), my + rr(30, 90)]);           // notch back in
-        } else if (k < 0.85) {
-          const t = rr(0.3, 0.7), mx = n.x + (m.x - n.x) * t, my = n.y + (m.y - n.y) * t;
-          edge.push([mx + dir * W * rr(0.005, 0.02), my]);                      // pinch: thin neck
-        }
-      }
+      const s = n.x < W / 2 ? -1 : 1;                // which side of the page this turn is on
+      const over = W * rr(0.04, phone ? 0.07 : 0.09);   // how far the elbow's point reaches out
+      const outer = [n.x + s * (n.w + over), n.y - n.w * 0.6];
+      const inner = [n.x - s * n.w * 0.5, n.y + n.w * 1.1];
+      if (i === 0) { L.push([n.x - n.w, n.y]); R.push([n.x + n.w, n.y]); return; }
+      if (s < 0) { L.push(outer); R.push(inner); } else { R.push(outer); L.push(inner); }
     });
     const d = "M" + [...L, ...R.reverse()].map(([px, py]) => `${clampX(px).toFixed(1)} ${py.toFixed(1)}`).join(" L") + " Z";
     mb.setAttribute("viewBox", `0 0 ${W} ${H}`);
