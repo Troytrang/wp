@@ -1,5 +1,42 @@
-(() => {
+(async () => {
   const D = window.PORTFOLIO;
+
+  /* ---------- video list from the Google Sheet (falls back to data.js) ---------- */
+  function parseCSV(t) {
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < t.length; i++) {
+      const c = t[i];
+      if (q) { if (c === '"') { if (t[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+      else if (c === '"') q = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && t[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+  const fold = (s) => (s || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+  const groupOf = (g) => { g = fold(g); return g.includes("game") ? "game-ads" : g.includes("led") ? "led-visual" : (g.includes("brand") || g.includes("product") || g.includes("san pham")) ? "brand-product" : null; };
+  async function mergeSheet() {
+    if (!D.sheetId) return;
+    try {
+      const r = await fetch(`https://docs.google.com/spreadsheets/d/${D.sheetId}/gviz/tq?tqx=out:csv`, { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      const rows = parseCSV(await r.text()).slice(1);            // first row = headers
+      const bySec = {};
+      rows.forEach(([link, grp, frame, title, show]) => {
+        const id = groupOf(grp); if (!id) return;
+        const s = fold(show); if (s && /^(khong|no|false|0|an)$/.test(s)) return;
+        const f = fold(frame);
+        (bySec[id] = bySec[id] || []).push({
+          video: (link || "").trim(), title: (title || "").trim() || "Video",
+          format: /doc|vertical|9:16|dung/.test(f) ? "vertical" : "wide"
+        });
+      });
+      D.sections.forEach((sec) => { if (bySec[sec.id]) sec.items = bySec[sec.id]; });
+    } catch (e) { console.warn("Sheet not loaded, using data.js", e); }
+  }
+  await mergeSheet();
   const $ = (s, el = document) => el.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
