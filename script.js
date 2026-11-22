@@ -243,10 +243,11 @@
     // diagonal down-left -> point -> shallow stroke down-right -> point -> back to the start column
     const P = [[0.65, 0], [0.2, 0.34], [0.93, 0.25], [0.36, 0.62], [0.9, 0.77], [0.65, 1]];
     const HW = [0.028, 0.036, 0.048, 0.052, 0.04];               // half width of each stroke (share of width)
+    const SHIFT = 0.1;                                          // whole bolt moved left by 10% of the width
     const blockH = Math.max(W * 1.05, 1000);
     const pts = [], hw = [];
     for (let k = 0, y0 = -blockH * 0.05; y0 < H + blockH; k++, y0 += blockH) {
-      P.forEach(([px, py], i) => { if (k && i === 0) return; pts.push([W * px, y0 + blockH * py]); });
+      P.forEach(([px, py], i) => { if (k && i === 0) return; pts.push([W * (px - SHIFT), y0 + blockH * py]); });
       HW.forEach((w) => hw.push(Math.max(phone ? 16 : 24, W * w)));
     }
     // offset each stroke by its own width, then meet the neighbouring stroke's offset line -> razor-sharp points
