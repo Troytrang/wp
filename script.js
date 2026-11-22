@@ -215,7 +215,7 @@
     if (focus) btn.focus();
     observeReveals(); watchPreviews();
   }
-  /* ---------- hand-drawn circle that goes round the tabs (5 s each) so visitors notice the other categories ---------- */
+  /* ---------- hand-drawn circle that goes round the tabs (2.5 s each) so visitors notice the other categories ---------- */
   (() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     tabs.style.position = "relative";
@@ -238,7 +238,7 @@
       if (stopped || !visible) return;
       place();
       ring.classList.remove("on"); void ring.getBoundingClientRect(); ring.classList.add("on");   // restart the draw animation
-      timer = setTimeout(() => { ring.classList.add("out"); timer = setTimeout(() => { ring.classList.remove("out"); k = (k + 1) % tabBtns.length; draw(); }, 350); }, 5000);
+      timer = setTimeout(() => { ring.classList.add("out"); timer = setTimeout(() => { ring.classList.remove("out"); k = (k + 1) % tabBtns.length; draw(); }, 350); }, 2500);
     }
     const stop = () => { stopped = true; clearTimeout(timer); ring.classList.remove("on"); };
     tabBtns.forEach((b) => b.addEventListener("click", stop));          // once someone uses the tabs, the hint has done its job
