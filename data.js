@@ -14,8 +14,6 @@ window.PORTFOLIO = {
      If the sheet can't be read, the "items" lists below are used instead. */
   sheetId: "1xePo5ngCP-7prVJO9N1QnKw_-yvN5igSTMdkp8gvgfs",
 
-  showreel: "", // main showreel link (16:9)
-
   /* Background music: an .mp3 in assets/ (or a full link). Visitors switch it on with the MUSIC button
      (browsers never let a page start sound by itself). It pauses while a video is open. */
   music: { src: "", title: "", credit: "", volume: 0.35 },

@@ -104,13 +104,6 @@
     requestAnimationFrame(() => sticker.classList.add("in"));
   }).catch(() => { sticker.innerHTML = '<img src="assets/sticker.svg" alt="">'; });
 
-  /* ---------- showreel ---------- */
-  const sr = parseVideo(D.showreel);
-  $("#showreel-frame").outerHTML = `<div class="frame-lg reveal">${frameHTML("wide",
-    sr ? `<button class="open" type="button" data-video="${esc(D.showreel)}" data-title="Showreel" data-format="wide" aria-label="Play showreel" style="all:unset;cursor:pointer;position:absolute;inset:0">
-            ${sr.thumb ? `<img class="thumb" src="${sr.thumb}" alt="">` : placeholder("wide", "Showreel")}<span class="play"></span></button>`
-       : placeholder("wide", "Showreel"))}</div>`;
-
   /* ---------- tabs + panels ---------- */
   const PAGE = 6;                 // cards shown per grid before "LOAD MORE"
   const PLAYLISTS = {};
