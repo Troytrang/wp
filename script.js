@@ -415,7 +415,14 @@
   // Controls stay visible in a strip under the picture.
   function cropPlayer() {
     const f = player.querySelector("iframe");
-    if (!player.classList.contains("yt-crop") || !f) { player.style.height = ""; return; }
+    if (!player.classList.contains("yt-crop") || !f) {
+      // Drive's player needs room for its play button and controls: a very wide LED clip gets a taller box
+      // and Drive letterboxes the picture inside it instead of cutting its own player off
+      const tall = f && /drive\.google/.test(f.src) && player.clientWidth / ratioOf(list[pos]) < 360;
+      player.style.aspectRatio = tall ? "auto" : ratioOf(list[pos]).toFixed(4);
+      player.style.height = tall ? `${Math.round(Math.min(440, innerHeight * 0.6))}px` : "";
+      return;
+    }
     const w = player.clientWidth, vh = w / ratioOf(list[pos]);
     const h = Math.round(Math.max(56, w * 0.055));
     player.style.aspectRatio = "auto";
