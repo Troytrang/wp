@@ -297,7 +297,7 @@ main, .foot { position: relative; z-index: 1; }
 }
 
 /* ---------- one lightning bolt zig-zagging down the whole page ---------- */
-.megabolt { position: absolute; left: 0; top: 0; width: 100%; z-index: 0; pointer-events: none; overflow: visible; }
+.megabolt { position: absolute; left: 0; top: 0; width: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
 .megabolt .shadow { fill: var(--ink); }
 .megabolt .edge { fill: none; stroke: var(--white); stroke-width: 10; stroke-linejoin: miter; }
 .megabolt .core { fill: var(--yel); }

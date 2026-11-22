@@ -328,7 +328,10 @@
   /* ---------- page-long lightning bolt ---------- */
   const mb = $("#megabolt");
   function drawBolt() {
+    // measure the page without the bolt itself, or the bolt keeps making the page longer
+    mb.setAttribute("height", 0); mb.style.height = "0px";
     const W = document.documentElement.clientWidth, H = document.body.scrollHeight;
+    mb.style.height = "";
     const phone = W < 700;
     // one block of the bolt, traced from Trang's sketch (x as share of the width, y as share of the block height):
     // long diagonal down-left -> sharp point -> almost flat stroke across to the right -> point ->
