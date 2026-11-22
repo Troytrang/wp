@@ -123,8 +123,22 @@
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
         `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)} with sound`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : "▶ PLAY WITH SOUND"}</span></button>` +
         (proj ? `<span class="proj-badge">${esc(proj.name)}</span>` : "");
-      const sticker = proj ? `<span class="clip-sticker" aria-hidden="true"><b>${proj.count}</b>CLIPS</span>` : "";
-      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar, sticker)}</article>`;
+      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar)}${proj ? strip(proj) : ""}</article>`;
+    };
+    // project card: a row of small thumbnails for the other clips, the last tile shows "+N"
+    const strip = (proj) => {
+      const clips = PLAYLISTS[proj.key], rest = clips.length - 1;
+      const shown = rest <= 4 ? rest : 3;
+      const tile = (c, i, more) => {
+        const v = parseVideo(c.video);
+        const img = v && v.thumb ? `<img src="${v.thumb}" alt="" loading="lazy">` : "";
+        return `<button class="open strip-tile${more ? " strip-more" : ""}" type="button" data-video="${esc(c.video)}" data-list="${proj.key}" data-idx="${i}"
+          aria-label="${more ? `See ${more} more clips of ${esc(proj.name)}` : `Play ${esc(proj.name)} clip ${i + 1}`}">${img}${more ? `<span>+${more}</span>` : ""}</button>`;
+      };
+      let html = "";
+      for (let i = 1; i <= shown; i++) html += tile(clips[i], i);
+      if (rest > shown) html += tile(clips[shown + 1], shown + 1, rest - shown);
+      return `<div class="clip-strip" style="--n:${Math.max(4, html.split("strip-tile").length - 1)}">${html}</div>`;
     };
     // rows with the same "Dự án" collapse into one project card; its clips get their own ◀ ▶ playlist
     const groups = new Map(), loose = [];
