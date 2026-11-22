@@ -214,6 +214,8 @@ button.pill:hover, a.pill:hover { transform: translate(-2px, -3px); }
 .lb-player { position: relative; aspect-ratio: 16 / 9; background: #000; border: 8px solid var(--white); box-shadow: 14px 14px 0 var(--yel); }
 .lb-dialog.vert .lb-player { aspect-ratio: 9 / 16; max-height: 80vh; margin: 0 auto; }
 .lb-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.lb-player.yt-crop { overflow: hidden; max-height: none; }
+.lb-player.yt-crop iframe { bottom: auto; }
 .lb-title { font-family: var(--display); font-size: 22px; margin: 22px 0 0; }
 .lb-close { position: absolute; top: -22px; right: -14px; z-index: 2; width: 54px; height: 54px; border-radius: 50%; border: 5px solid var(--white); background: var(--red); color: var(--white); font-size: 24px; cursor: pointer; box-shadow: 5px 5px 0 var(--ink); }
 
@@ -259,6 +261,8 @@ button.pill:hover, a.pill:hover { transform: translate(-2px, -3px); }
 #work .tag { text-align: left; }
 /* looping previews + click-for-sound cover */
 .win iframe.loop { pointer-events: none; transform: scale(1.02); }
+/* previews: push YouTube's title/channel bar into a black strip outside the frame */
+.pv iframe.loop { top: -64px; bottom: auto; height: calc(100% + 128px); }
 .pv { position: absolute; inset: 0; }
 .pv iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; animation: fadein .3s; }
 .win video.thumb { pointer-events: none; }

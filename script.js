@@ -127,20 +127,27 @@
     };
     // rows with the same "Dự án" collapse into one project card; its clips get their own ◀ ▶ playlist
     const groups = new Map(), loose = [];
+    // no "Dự án" value? rows that share the same name (e.g. 7 × "VTC – ITC 20") are treated as one project
+    const nameCount = {};
+    sec.items.forEach((it) => { const k = fold(it.title || ""); nameCount[k] = (nameCount[k] || 0) + 1; });
     sec.items.forEach((it) => {
+      if (!it.project && nameCount[fold(it.title || "")] > 1) it.project = it.title;
       if (!it.project) return loose.push(it);
       if (!groups.has(it.project)) { groups.set(it.project, []); loose.push({ __proj: it.project }); }
       groups.get(it.project).push(it);
     });
-    PLAYLISTS[sec.id] = loose.filter((it) => !it.__proj && parseVideo(it.video));
-    let n = 0;
+    const single = PLAYLISTS[sec.id] = [];        // every card that plays on its own, in page order
     const indexed = loose.map((it) => {
-      if (!it.__proj) return { it, k: parseVideo(it.video) ? n++ : -1 };
-      const clips = groups.get(it.__proj).filter((c) => parseVideo(c.video));
-      const key = `${sec.id}::${it.__proj}`;
-      PLAYLISTS[key] = clips;
-      const coverIt = clips[0] || groups.get(it.__proj)[0];
-      return { it: coverIt, k: 0, proj: { key, name: it.__proj, count: clips.length || groups.get(it.__proj).length } };
+      if (it.__proj) {
+        const all = groups.get(it.__proj), clips = all.filter((c) => parseVideo(c.video));
+        if (clips.length > 1) {
+          const key = `${sec.id}::${it.__proj}`;
+          PLAYLISTS[key] = clips;
+          return { it: clips[0], k: 0, proj: { key, name: it.__proj, count: clips.length } };
+        }
+        it = clips[0] || all[0];                    // 0–1 playable clips: an ordinary card
+      }
+      return { it, k: parseVideo(it.video) ? single.push(it) - 1 : -1 };
     });
     const grid = (list, cls) => {
       if (!list.length) return "";
@@ -239,15 +246,30 @@
     dialog.classList.remove("vert");
     dialog.style.width = `min(1400px, 92vw, calc(76vh * ${ar.toFixed(4)}))`;
     player.style.aspectRatio = ar.toFixed(4);
+    player.classList.toggle("yt-crop", v.kind === "yt");
+    cropPlayer();
     dialog.classList.toggle("single", list.length < 2);
   }
+  // YouTube always shows the video title + channel along the top. The iframe is made taller than the
+  // video so that bar lands in a black strip above the picture, and that strip is cut off.
+  // Controls stay visible in a strip under the picture.
+  function cropPlayer() {
+    const f = player.querySelector("iframe");
+    if (!player.classList.contains("yt-crop") || !f) { player.style.height = ""; return; }
+    const w = player.clientWidth, vh = w / ratioOf(list[pos]);
+    const h = Math.round(Math.max(56, w * 0.055));
+    player.style.aspectRatio = "auto";
+    player.style.height = `${vh + h + (player.offsetHeight - player.clientHeight)}px`;   // + borders
+    f.style.top = `${-h}px`; f.style.height = `${vh + 2 * h}px`;
+  }
+  addEventListener("resize", () => { if (!lb.hidden) cropPlayer(); });
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button.open[data-video]");
     if (b) {
       lastFocus = b;
       list = b.dataset.list ? PLAYLISTS[b.dataset.list] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
       show(b.dataset.list ? +b.dataset.idx : 0);
-      lb.hidden = false; document.body.style.overflow = "hidden";
+      lb.hidden = false; document.body.style.overflow = "hidden"; cropPlayer();
       if (musicOn) { bgm.pause(); pausedForVideo = true; }
       $(".lb-close").focus();
     }
