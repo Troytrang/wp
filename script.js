@@ -34,12 +34,18 @@
     try {
       const r = await fetch(`https://docs.google.com/spreadsheets/d/${D.sheetId}/gviz/tq?tqx=out:csv`, { cache: "no-store" });
       if (!r.ok) throw new Error(r.status);
-      const rows = parseCSV(await r.text()).slice(1);            // first row = headers
+      const all = parseCSV(await r.text());
+      const head = (all[0] || []).map(fold);
+      // find each column by its header, so columns can be moved or added in the sheet
+      const col = (re, dflt) => { const i = head.findIndex((h) => re.test(h)); return i < 0 ? dflt : i; };
+      const C = { link: col(/link|url/, 0), grp: col(/nhom|group/, 1), frame: col(/khung|frame|size|ti le/, 2),
+                  title: col(/^ten|title|name/, 3), show: col(/hien|show/, 4), proj: col(/du an|project/, -1) };
       const bySec = {};
-      rows.forEach(([link, grp, frame, title, show]) => {
-        const id = groupOf(grp); if (!id) return;
-        const s = fold(show); if (s && /^(khong|no|false|0|an)$/.test(s)) return;
-        (bySec[id] = bySec[id] || []).push({ video: (link || "").trim(), title: (title || "").trim() || "Video", ...frameOf(frame) });
+      all.slice(1).forEach((row) => {
+        const get = (k) => (C[k] >= 0 ? (row[C[k]] || "").trim() : "");
+        const id = groupOf(get("grp")); if (!id) return;
+        const s = fold(get("show")); if (s && /^(khong|no|false|0|an)$/.test(s)) return;
+        (bySec[id] = bySec[id] || []).push({ video: get("link"), title: get("title") || "Video", project: get("proj"), ...frameOf(get("frame")) });
       });
       D.sections.forEach((sec) => { if (bySec[sec.id]) sec.items = bySec[sec.id]; });
     } catch (e) { console.warn("Sheet not loaded, using data.js", e); }
@@ -59,6 +65,9 @@
     m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
     if (m) return { kind: "vimeo", id: m[1], embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1`,
       loop: `https://player.vimeo.com/video/${m[1]}?background=1`, thumb: null };
+    m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})/);
+    if (m) return { kind: "drive", id: m[1], embed: `https://drive.google.com/file/d/${m[1]}/preview`,
+      loop: null, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1000` };   // Drive can't autoplay: thumbnail only, plays on click
     if (/\.(mp4|webm|mov)(\?|#|$)/i.test(url)) return { kind: "file", src: url };
     return null;
   }
@@ -111,7 +120,7 @@
       `<button class="tab" role="tab" id="tab-${sec.id}" aria-controls="panel-${sec.id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">
          <span class="num">${sec.num}</span><img src="${sec.icon}" alt="">${esc(sec.title.join(" "))}
        </button>`);
-    const card = (it, k) => {
+    const card = (it, k, proj) => {
       const v = parseVideo(it.video);
       const ar = ratioOf(it), cls = ar >= 2.2 ? " item-ultra" : "";
       if (!v) return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title, it.label), ar)}</article>`;
@@ -119,16 +128,30 @@
         ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
         : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
-        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-sec="${sec.id}" data-idx="${k}" aria-label="Play ${esc(it.title)} with sound"><span class="sound">▶ PLAY WITH SOUND</span></button>`;
-      return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, media, ar)}</article>`;
+        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)} with sound`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : "▶ PLAY WITH SOUND"}</span></button>` +
+        (proj ? `<span class="proj-badge">${esc(proj.name)} <b>${proj.count}</b></span>` : "");
+      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar)}</article>`;
     };
-    // index inside the section's playlist (items that have a video), used by the viewer's ◀ ▶
+    // rows with the same "Dự án" collapse into one project card; its clips get their own ◀ ▶ playlist
+    const groups = new Map(), loose = [];
+    sec.items.forEach((it) => {
+      if (!it.project) return loose.push(it);
+      if (!groups.has(it.project)) { groups.set(it.project, []); loose.push({ __proj: it.project }); }
+      groups.get(it.project).push(it);
+    });
+    PLAYLISTS[sec.id] = loose.filter((it) => !it.__proj && parseVideo(it.video));
     let n = 0;
-    const indexed = sec.items.map((it) => ({ it, k: parseVideo(it.video) ? n++ : -1 }));
-    PLAYLISTS[sec.id] = sec.items.filter((it) => parseVideo(it.video));
+    const indexed = loose.map((it) => {
+      if (!it.__proj) return { it, k: parseVideo(it.video) ? n++ : -1 };
+      const clips = groups.get(it.__proj).filter((c) => parseVideo(c.video));
+      const key = `${sec.id}::${it.__proj}`;
+      PLAYLISTS[key] = clips;
+      const coverIt = clips[0] || groups.get(it.__proj)[0];
+      return { it: coverIt, k: 0, proj: { key, name: it.__proj, count: clips.length || groups.get(it.__proj).length } };
+    });
     const grid = (list, cls) => {
       if (!list.length) return "";
-      const html = list.map(({ it, k }, m) => card(it, k).replace('<article class="item', `<article ${m >= PAGE ? "hidden " : ""}class="item`)).join("");
+      const html = list.map(({ it, k, proj }, m) => card(it, k, proj).replace('<article class="item', `<article ${m >= PAGE ? "hidden " : ""}class="item`)).join("");
       const more = list.length > PAGE ? `<button class="btn btn-white more" type="button" data-more>LOAD MORE <span>(${list.length - PAGE})</span></button>` : "";
       return `<div class="grid ${cls}">${html}</div>${more}`;
     };
@@ -229,8 +252,8 @@
     const b = e.target.closest("button.open[data-video]");
     if (b) {
       lastFocus = b;
-      list = b.dataset.sec ? PLAYLISTS[b.dataset.sec] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
-      show(b.dataset.sec ? +b.dataset.idx : 0);
+      list = b.dataset.list ? PLAYLISTS[b.dataset.list] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
+      show(b.dataset.list ? +b.dataset.idx : 0);
       lb.hidden = false; document.body.style.overflow = "hidden";
       if (musicOn) { bgm.pause(); pausedForVideo = true; }
       $(".lb-close").focus();
@@ -282,6 +305,7 @@
     const v = parseVideo(pv.dataset.video); if (!v) return;
     pv.dataset.on = "1";
     if (v.kind === "file") { const vid = pv.querySelector("video"); vid && vid.play().catch(() => {}); return; }
+    if (!v.loop) return;
     pv.insertAdjacentHTML("beforeend", loopMedia(v, "").replace("data-src=", "src="));
   }
   function stopPreview(pv) {
