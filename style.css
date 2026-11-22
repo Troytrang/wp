@@ -299,7 +299,7 @@ main, .foot { position: relative; z-index: 1; }
 /* ---------- one lightning bolt zig-zagging down the whole page ---------- */
 .megabolt { position: absolute; left: 0; top: 0; width: 100%; z-index: 0; pointer-events: none; overflow: visible; }
 .megabolt .shadow { fill: var(--ink); }
-.megabolt .edge { fill: none; stroke: var(--ink); stroke-width: 8; stroke-linejoin: miter; }
+.megabolt .edge { fill: none; stroke: var(--white); stroke-width: 10; stroke-linejoin: miter; }
 .megabolt .core { fill: var(--yel); }
 .megabolt.draw .core, .megabolt.draw .shadow, .megabolt.draw .edge { animation: boltin 1.1s cubic-bezier(.3,1.2,.4,1) both; }
 @keyframes boltin { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
