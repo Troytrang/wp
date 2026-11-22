@@ -434,3 +434,13 @@ main, .foot { position: relative; z-index: 1; }
 .sticker.in .anim-1 { translate: 0 calc(var(--kick, 0) * -16px); scale: calc(1 + var(--kick, 0) * .04); }
 .sticker.in .anim-2 { translate: 0 calc(var(--kick, 0) * -9px); scale: calc(1 + var(--kick, 0) * .05); }
 @media (max-width: 700px) { .eq-wall { display: none; } }
+
+/* panorama LED walls (wider than 4:1, e.g. 6400×768): a taller window that slowly pans across the whole wall */
+.item-pano .frame-wide .win { aspect-ratio: auto; height: var(--ph); --ph: clamp(190px, 24vw, 330px); }
+.item-pano .pv img.thumb, .item-pano .pv iframe.loop { left: 0; right: auto; width: calc(var(--ph) * var(--ar)); max-width: none;
+  animation: pano 26s ease-in-out infinite alternate; }
+.item-pano .pv iframe.loop { transform: none; }
+@keyframes pano { from { left: 0; translate: 0 0; } to { left: 100%; translate: -100% 0; } }
+.item-pano .win::after { content: "◀ PANORAMA ▶"; position: absolute; right: 10px; bottom: 10px; z-index: 1; pointer-events: none;
+  font: 700 12px var(--body); letter-spacing: 1px; color: var(--blue-2); background: var(--yel); padding: 3px 8px; }
+@media (prefers-reduced-motion: reduce) { .item-pano .pv img.thumb, .item-pano .pv iframe.loop { animation: none; } }

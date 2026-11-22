@@ -118,7 +118,7 @@
        </button>`);
     const card = (it, k, proj) => {
       const v = parseVideo(it.video);
-      const ar = ratioOf(it), cls = ar >= 2.2 ? " item-ultra" : "";
+      const ar = ratioOf(it), cls = ar >= 4 ? " item-ultra item-pano" : ar >= 2.2 ? " item-ultra" : "";   // pano: LED walls like 6400×768
       if (!v) return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title, it.label), ar)}${caption(it.title)}</article>`;
       const still = v.kind === "file"
         ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
