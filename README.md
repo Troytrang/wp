@@ -18,3 +18,7 @@ If the sheet can't be read, the lists in **`data.js`** are used:
 
 ## Files
 - `index.html` – page structure · `style.css` – look · `script.js` – tabs, lightbox, animations · `assets/` – vector graphics from the CV.
+
+### Cột "Tiếng" (không bắt buộc)
+Ghi **Có** hoặc **Không**. Để trống thì web tự đoán: LED Visual = không tiếng, Game Ads và Brand & Product = có tiếng.
+Video không tiếng hiện nút "▶ PLAY" (thay vì "PLAY WITH SOUND"), có nhãn NO AUDIO khi mở, và nhạc nền của web vẫn chạy tiếp.

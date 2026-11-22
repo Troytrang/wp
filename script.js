@@ -29,6 +29,8 @@
     if (/vuong|square/.test(f)) return { format: "wide", ratio: 1, label: "1:1" };
     return { format: "wide", ratio: 16 / 9 };
   }
+  // "Tiếng" column: Có / Không. Empty = guess from the group (LED clips are usually silent)
+  const soundOf = (raw) => { const v = fold(raw || ""); return !v ? null : /^(co|yes|true|1|x)$/.test(v) ? true : /^(khong|no|false|0)$/.test(v) ? false : null; };
   async function mergeSheet() {
     if (!D.sheetId) return;
     try {
@@ -39,13 +41,14 @@
       // find each column by its header, so columns can be moved or added in the sheet
       const col = (re, dflt) => { const i = head.findIndex((h) => re.test(h)); return i < 0 ? dflt : i; };
       const C = { link: col(/link|url/, 0), grp: col(/nhom|group/, 1), frame: col(/khung|frame|size|ti le/, 2),
-                  title: col(/^ten|title|name/, 3), show: col(/hien|show/, 4), proj: col(/du an|project/, -1) };
+                  title: col(/^ten|title|name/, 3), show: col(/hien|show/, 4), proj: col(/du an|project/, -1),
+                  sound: col(/tieng|am thanh|sound|audio/, -1) };
       const bySec = {};
       all.slice(1).forEach((row) => {
         const get = (k) => (C[k] >= 0 ? (row[C[k]] || "").trim() : "");
         const id = groupOf(get("grp")); if (!id) return;
         const s = fold(get("show")); if (s && /^(khong|no|false|0|an)$/.test(s)) return;
-        (bySec[id] = bySec[id] || []).push({ video: get("link"), title: get("title") || "Video", project: get("proj"), ...frameOf(get("frame")) });
+        (bySec[id] = bySec[id] || []).push({ video: get("link"), title: get("title") || "Video", project: get("proj"), sound: soundOf(get("sound")), ...frameOf(get("frame")) });
       });
       D.sections.forEach((sec) => { if (bySec[sec.id]) sec.items = bySec[sec.id]; });
     } catch (e) { console.warn("Sheet not loaded, using data.js", e); }
@@ -116,15 +119,17 @@
     const card = (it, k, proj) => {
       const v = parseVideo(it.video);
       const ar = ratioOf(it), cls = ar >= 2.2 ? " item-ultra" : "";
-      if (!v) return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title, it.label), ar)}</article>`;
+      if (!v) return `<article class="item reveal${cls}" aria-label="${esc(it.title)}">${frameHTML(it.format, placeholder(it.format, it.title, it.label), ar)}${caption(it.title)}</article>`;
       const still = v.kind === "file"
         ? `<video class="thumb" src="${esc(v.src)}#t=0.5" muted loop playsinline preload="metadata" aria-hidden="true"></video>`
         : v.thumb ? `<img class="thumb" src="${v.thumb}" alt="" loading="lazy">` : `<div class="placeholder"><div>▶</div></div>`;
       const media = `<div class="pv" data-video="${esc(it.video)}">${still}</div>` +
-        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)} with sound`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : "▶ PLAY WITH SOUND"}</span></button>` +
-        (proj ? `<span class="proj-badge">${esc(proj.name)}</span>` : "");
-      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar)}${proj ? strip(proj) : ""}</article>`;
+        `<button class="open cover" type="button" data-video="${esc(it.video)}" data-title="${esc(it.title)}" data-format="${it.format}" data-ratio="${ar}" data-list="${proj ? proj.key : sec.id}" data-idx="${k}" aria-label="${proj ? `Open ${esc(proj.name)}: ${proj.count} clips` : `Play ${esc(it.title)}${it.sound ? " with sound" : ""}`}"><span class="sound">${proj ? `▶ VIEW ALL ${proj.count} CLIPS` : it.sound ? "▶ PLAY WITH SOUND" : "▶ PLAY"}</span></button>`;
+      return `<article class="item reveal${cls}${proj ? " item-project" : ""}" aria-label="${esc(proj ? proj.name : it.title)}">${frameHTML(it.format, media, ar)}${caption(proj ? proj.name : it.title, proj)}${proj ? strip(proj) : ""}</article>`;
     };
+    // event / video name, always visible under the frame
+    const caption = (name, proj) => `<p class="item-cap"><span>${esc(name)}</span>${proj ? `<b>${proj.count} CLIPS</b>` : ""}</p>`;
+    sec.items.forEach((it) => { if (it.sound == null) it.sound = sec.id !== "led-visual"; });
     // project card: a row of small thumbnails for the other clips, the last tile shows "+N"
     const strip = (proj) => {
       const clips = PLAYLISTS[proj.key], rest = clips.length - 1;
@@ -256,6 +261,8 @@
       ? `<video src="${esc(v.src)}" controls autoplay playsinline></video>`
       : `<iframe src="${v.embed}" title="${esc(it.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
     $("#lb-title").textContent = it.title;
+    $("#lb-title").dataset.silent = it.sound === false ? "1" : "";
+    syncMusic(it);
     $("#lb-count").textContent = list.length > 1 ? `${pos + 1} / ${list.length}` : "";
     const ar = ratioOf(it);
     dialog.classList.remove("vert");
@@ -285,13 +292,18 @@
       list = b.dataset.list ? PLAYLISTS[b.dataset.list] : [{ video: b.dataset.video, title: b.dataset.title, format: b.dataset.format, ratio: +b.dataset.ratio || 0 }];
       show(b.dataset.list ? +b.dataset.idx : 0);
       lb.hidden = false; document.body.style.overflow = "hidden"; cropPlayer();
-      if (musicOn) { bgm.pause(); pausedForVideo = true; }
       $(".lb-close").focus();
     }
     if (e.target.closest("[data-close]")) close();
     if (e.target.closest("[data-prev]")) show(pos - 1);
     if (e.target.closest("[data-next]")) show(pos + 1);
   });
+  // silent clips (most LED visuals) keep the site music going; clips with sound pause it
+  function syncMusic(it) {
+    if (!musicOn) return;
+    if (it.sound === false) { if (pausedForVideo) { bgm.play().catch(() => {}); pausedForVideo = false; } }
+    else if (!pausedForVideo) { bgm.pause(); pausedForVideo = true; }
+  }
   function close() {
     if (lb.hidden) return;
     lb.hidden = true; player.innerHTML = ""; document.body.style.overflow = "";
