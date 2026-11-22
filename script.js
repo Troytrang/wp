@@ -138,6 +138,7 @@
       if (it.sound == null) it.sound = sec.id !== "led-visual";
       const k = Object.keys(D.previews || {}).find((x) => fold(x) === fold(it.title || ""));
       if (k && D.previews[k].frame) Object.assign(it, frameOf(D.previews[k].frame));
+      if (k) it.previewSrc = D.previews[k].src;
     });
     // project card: a row of small thumbnails for the other clips, the last tile shows "+N"
     const strip = (proj) => {
@@ -401,11 +402,14 @@
   let lastFocus = null, list = [], pos = 0;
   function show(p) {
     pos = (p + list.length) % list.length;
-    const it = list[pos], v = parseVideo(it.video || it.src);
+    const it = list[pos];
+    let v = parseVideo(it.video || it.src);
+    // Drive squeezes very wide LED clips in its player: use the site's own copy (right shape) when there is one
+    if (it.previewSrc && (!v || v.kind === "drive")) v = { kind: "file", src: it.previewSrc };
     player.innerHTML = v.kind === "file"
-      ? `<video src="${esc(v.src)}" controls autoplay playsinline></video>`
+      ? `<video src="${esc(v.src)}" controls autoplay playsinline${v.src === it.previewSrc ? " muted loop" : ""}></video>`
       : `<iframe src="${v.embed}" title="${esc(it.title)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>`;
-    $("#lb-title").textContent = it.title;
+    $("#lb-title").textContent = it.title + (v.src && v.src === it.previewSrc ? " · Highlight" : "");
     $("#lb-title").dataset.silent = it.sound === false ? "1" : "";
     syncMusic(it);
     $("#lb-count").textContent = list.length > 1 ? `${pos + 1} / ${list.length}` : "";
