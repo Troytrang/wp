@@ -237,7 +237,8 @@
     function draw() {
       if (stopped || !visible) return;
       place();
-      void ring.getBoundingClientRect(); ring.classList.add("on");          // moved while invisible, then fades in
+      ring.classList.remove("draw"); void ring.getBoundingClientRect();     // moved while invisible…
+      ring.classList.add("on", "draw");                                      // …then the marker draws itself round the next tab
       timer = setTimeout(() => { ring.classList.remove("on"); timer = setTimeout(() => { k = (k + 1) % tabBtns.length; draw(); }, 450); }, 2500);
     }
     const stop = () => { stopped = true; clearTimeout(timer); ring.classList.remove("on"); };
