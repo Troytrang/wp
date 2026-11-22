@@ -108,11 +108,23 @@
   </div>
 </div>
 
-<button class="music" id="music" type="button" aria-pressed="false" aria-label="Play background music" hidden>
-  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-  <span class="music-label">MUSIC</span>
-</button>
-<audio id="bgm" loop preload="none"></audio>
+<div class="player" id="player" hidden>
+  <button class="music" id="music" type="button" aria-pressed="false" aria-label="Play background music">
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span class="music-label">MUSIC</span>
+  </button>
+  <div class="pl-bar" role="group" aria-label="Music player">
+    <div class="pl-now"><b id="pl-title"></b><span id="pl-artist"></span>
+      <input class="pl-seek" id="pl-seek" type="range" min="0" max="1000" value="0" aria-label="Song position"></div>
+    <button class="pl-btn" type="button" data-pl="prev" aria-label="Previous song">⏮</button>
+    <button class="pl-btn pl-main" type="button" data-pl="toggle" aria-label="Play">▶</button>
+    <button class="pl-btn" type="button" data-pl="next" aria-label="Next song">⏭</button>
+    <label class="pl-vol"><span aria-hidden="true">🔊</span><input id="pl-vol" type="range" min="0" max="100" value="35" aria-label="Volume"></label>
+    <button class="pl-btn" type="button" data-pl="list" aria-expanded="false" aria-controls="pl-list" aria-label="Show playlist">☰</button>
+  </div>
+  <ol class="pl-list" id="pl-list" hidden></ol>
+</div>
+<audio id="bgm" preload="none"></audio>
 
 <div class="cursor" id="cursor" aria-hidden="true"></div>
 

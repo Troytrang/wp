@@ -14,9 +14,24 @@ window.PORTFOLIO = {
      If the sheet can't be read, the "items" lists below are used instead. */
   sheetId: "1xePo5ngCP-7prVJO9N1QnKw_-yvN5igSTMdkp8gvgfs",
 
-  /* Background music: an .mp3 in assets/ (or a full link). Visitors switch it on with the MUSIC button
-     (browsers never let a page start sound by itself). It pauses while a video is open. */
-  music: { src: "assets/bgm-time-after-time.mp3", title: "Time After Time", credit: "Janset · Epidemic Sound", volume: 0.35 },
+  /* Background music: the playlist of the music player (bottom-left). Add a song = put the .mp3 in assets/music/
+     and add a line here. Visitors start it themselves (browsers block sound until a click). All tracks: Epidemic Sound. */
+  music: {
+    volume: 0.35,
+    credit: "Epidemic Sound",
+    tracks: [
+      { src: "assets/music/01-time-after-time.mp3", title: "Time After Time", artist: "Janset" },
+      { src: "assets/music/02-take-2.mp3", title: "Take 2", artist: "Mushkilla" },
+      { src: "assets/music/03-where-you-been-instrumental-version.mp3", title: "Where You Been (Instrumental)", artist: "Katori Walker" },
+      { src: "assets/music/04-coal.mp3", title: "Coal", artist: "Taelimb" },
+      { src: "assets/music/05-cuando-estes-conmigo.mp3", title: "Cuando Estés Conmigo", artist: "Loreana" },
+      { src: "assets/music/06-g-town.mp3", title: "G Town", artist: "Onoe Caponoe" },
+      { src: "assets/music/07-greatness-on-me-instrumental-version.mp3", title: "Greatness on Me (Instrumental)", artist: "Witchitaw Slim" },
+      { src: "assets/music/08-mine.mp3", title: "Mine", artist: "Duckmaw" },
+      { src: "assets/music/09-paperclips.mp3", title: "Paperclips", artist: "Another Notion" },
+      { src: "assets/music/10-snakes-instrumental-version.mp3", title: "Snakes (Instrumental)", artist: "Onoe Caponoe" }
+    ]
+  },
 
   sections: [
     {

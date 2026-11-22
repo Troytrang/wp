@@ -235,19 +235,53 @@
   });
 
   /* ---------- background music (browsers only allow sound after a click) ---------- */
-  const bgm = $("#bgm"), mBtn = $("#music");
+  const bgm = $("#bgm"), mBtn = $("#music"), player$ = $("#player");
   let musicOn = false, pausedForVideo = false;
-  if (D.music && D.music.src) {
-    bgm.src = D.music.src; bgm.volume = D.music.volume ?? 0.35;
-    mBtn.hidden = false;
-    if (D.music.title) mBtn.title = D.music.title + (D.music.credit ? " — " + D.music.credit : "");
+  const M = D.music || {}, TR = M.tracks || (M.src ? [{ src: M.src, title: M.title || "", artist: M.credit || "" }] : []);
+  let song = 0;
+  const plTitle = $("#pl-title"), plArtist = $("#pl-artist"), seek = $("#pl-seek"), vol = $("#pl-vol"), list$ = $("#pl-list");
+  const fmt = (x) => isFinite(x) ? `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, "0")}` : "";
+  function load(i) {
+    song = (i + TR.length) % TR.length;
+    bgm.src = TR[song].src;
+    plTitle.textContent = TR[song].title; plArtist.textContent = TR[song].artist;
+    mBtn.title = `${TR[song].title} — ${TR[song].artist}${M.credit ? " · " + M.credit : ""}`;
+    list$.querySelectorAll("li").forEach((li, k) => li.classList.toggle("on", k === song));
+    seek.value = 0;
+  }
+  if (TR.length) {
+    player$.hidden = false;
+    bgm.volume = M.volume ?? 0.35; vol.value = Math.round(bgm.volume * 100);
+    list$.innerHTML = TR.map((t, k) => `<li><button type="button" data-track="${k}"><span class="n">${String(k + 1).padStart(2, "0")}</span><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></button></li>`).join("") +
+      (M.credit ? `<li class="pl-credit">Music: ${esc(M.credit)}</li>` : "");
+    load(0);
     mBtn.insertAdjacentHTML("beforeend", '<span class="music-hint">♪ turn on music</span>');
     setTimeout(() => mBtn.querySelector(".music-hint")?.remove(), 7000);
   }
+  bgm.addEventListener("ended", () => { load(song + 1); if (musicOn) bgm.play().catch(() => {}); });
+  bgm.addEventListener("timeupdate", () => { if (!seeking && bgm.duration) seek.value = Math.round(bgm.currentTime / bgm.duration * 1000);
+    seek.title = `${fmt(bgm.currentTime)} / ${fmt(bgm.duration)}`; });
+  let seeking = false;
+  seek.addEventListener("input", () => { seeking = true; });
+  seek.addEventListener("change", () => { if (bgm.duration) bgm.currentTime = seek.value / 1000 * bgm.duration; seeking = false; });
+  vol.addEventListener("input", () => { bgm.volume = vol.value / 100; });
+  player$.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pl],[data-track]"); if (!b) return;
+    const act = b.dataset.pl;
+    if (b.dataset.track) { load(+b.dataset.track); setMusic(true); return; }
+    if (act === "toggle") setMusic(!musicOn);
+    if (act === "next" || act === "prev") {
+      if (act === "prev" && bgm.currentTime > 3) bgm.currentTime = 0;     // like any player: first press restarts the song
+      else load(song + (act === "next" ? 1 : -1));
+      if (musicOn) { pausedForVideo = false; bgm.play().catch(() => {}); }
+    }
+    if (act === "list") { const open = list$.hidden; list$.hidden = !open; b.setAttribute("aria-expanded", open); }
+  });
+  document.addEventListener("click", (e) => { if (!list$.hidden && !e.target.closest("#player")) { list$.hidden = true; $('[data-pl="list"]').setAttribute("aria-expanded", false); } });
   /* ---------- the page moves with the music: lightning + sticker kick on the beat, pixel column = equalizer ---------- */
   let actx, analyser, freq, vizOn = false;
   const root = document.documentElement, eq = document.createElement("canvas");
-  eq.className = "eq"; eq.setAttribute("aria-hidden", "true"); document.body.appendChild(eq);
+  eq.className = "eq-wall"; eq.setAttribute("aria-hidden", "true"); document.body.appendChild(eq);
   const ectx = eq.getContext("2d");
   function startViz() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -303,6 +337,8 @@
     mBtn.setAttribute("aria-label", on ? "Pause background music" : "Play background music");
     mBtn.querySelector(".music-hint")?.remove();
     if (on) { startViz(); bgm.play().catch(() => setMusic(false)); } else bgm.pause();
+    player$.classList.toggle("on", on);
+    const mainBtn = $('[data-pl="toggle"]'); mainBtn.textContent = on ? "⏸" : "▶"; mainBtn.setAttribute("aria-label", on ? "Pause" : "Play");
   }
   mBtn.addEventListener("click", () => setMusic(!musicOn));
 
