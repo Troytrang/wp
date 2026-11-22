@@ -55,7 +55,7 @@ window.PORTFOLIO = {
       title: ["BRAND &", "PRODUCT"],
       icon: "assets/ic-brand.svg",
       blurb: "Brand and product videos for consumer brands.",
-      stat: { value: "2", label: "brand & product films" },
+      stat: { value: "2", label: "brand & product videos" },
       items: [
         { title: "Kami – Brand Film", tags: ["Brand", "Freelance"], year: "2026", format: "wide", video: "" },
         { title: "Kami – Product Video", tags: ["Product", "Freelance"], year: "2026", format: "wide", video: "" }
