@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search).get("theme"), p = location.pathname.replace(/\/+$/, "");
+    var t = q || (p === "/dark" ? "dark" : p === "/bright" ? "bright" : null), forced = !!t;
+    if (!t) { try { t = localStorage.getItem("theme"); } catch (e) {} }
+    document.documentElement.dataset.theme = t === "dark" ? "dark" : "bright";
+    if (forced) document.documentElement.dataset.themeLink = "1";
+  })();
+</script>
 <title>Luong Nguyen Thu Trang — Video Editor Portfolio</title>
 <meta name="description" content="Video Editor portfolio: game ads, LED visuals and brand & product videos.">
 <meta property="og:title" content="Luong Nguyen Thu Trang — Video Editor">
@@ -21,6 +30,7 @@
 <header class="topbar">
   <a class="brand" href="#top" aria-label="Back to top"><img src="assets/star.svg" alt="" class="brand-star"> THU TRANG</a>
   <nav aria-label="Main">
+    <button class="theme-btn" type="button" data-theme-toggle aria-label="Switch colour theme"><span class="t-dark">☾ DARK</span><span class="t-bright">☀ BRIGHT</span></button>
     <a href="#work">Work</a>
     <a href="#about">About</a>
     <a href="#contact" class="nav-cta">Contact</a>

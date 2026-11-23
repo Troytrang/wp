@@ -495,6 +495,17 @@
     if (playing || kick || levels.some((l) => l > 0.01)) requestAnimationFrame(tick);
     else { vizOn = false; root.style.setProperty("--kick", 0); ectx.clearRect(0, 0, eq.width, eq.height); }
   }
+  let EQC = {};
+  const eqColours = () => { EQC = document.documentElement.dataset.theme === "dark"
+    ? { a: "#e3cf63", b: "#c9b856", top: "#d66a5f" } : { a: "#f9f000", b: "#fff36b", top: "#ff3b3b" }; };
+  eqColours();
+  /* theme switch (bright = the CV colours, dark = calmer charcoal version) */
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-theme-toggle]")) return;
+    const t = document.documentElement.dataset.theme === "dark" ? "bright" : "dark";
+    document.documentElement.dataset.theme = t; try { localStorage.setItem("theme", t); } catch (er) {}
+    eqColours();
+  });
   function drawEq(playing) {
     const w = eq.clientWidth, h = eq.clientHeight; if (!w) return;
     const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -509,7 +520,7 @@
       levels[r] = Math.max(v, (levels[r] || 0) * 0.86);           // fall slowly, like a real meter
       const lit = Math.min(cols, Math.round(levels[r] * cols));
       for (let c = 0; c < lit; c++) {
-        ectx.fillStyle = c === lit - 1 && lit === cols ? "#ff3b3b" : (r + c) % 2 ? "#f9f000" : "#fff36b";
+        ectx.fillStyle = c === lit - 1 && lit === cols ? EQC.top : (r + c) % 2 ? EQC.a : EQC.b;
         ectx.fillRect(w - (c + 1) * cell + 1, r * cell + 1, cell - 2, cell - 2);
       }
     }

@@ -585,3 +585,39 @@ main, .foot { position: relative; z-index: 1; }
   .vs-prev { left: -6px; } .vs-next { right: -6px; }
   .vs-label, .vs-count { font-size: 15px; }
 }
+
+/* ---------- theme switch button ---------- */
+.theme-btn { font: 400 13px var(--display); color: var(--white); background: transparent; border: 2px solid currentColor; padding: 5px 10px; cursor: pointer; align-self: center; }
+.theme-btn:hover { color: var(--yel); }
+.t-bright, [data-theme="dark"] .t-dark { display: none; }
+[data-theme="dark"] .t-bright { display: inline; }
+@media (max-width: 700px) { .theme-btn { font-size: 11px; padding: 4px 7px; } }
+
+/* ---------- DARK theme: same layout, calmer charcoal palette ---------- */
+[data-theme="dark"] {
+  --blue: #141518; --blue-2: #3b4150; --blue-d: #0d0e11;
+  --yel: #e3cf63; --ink: #050506; --red: #d66a5f; --white: #ecebe7;
+  color-scheme: dark;
+}
+[data-theme="dark"] body { background: #141518 linear-gradient(180deg, #111215 0, #17181c 1400px, #17181c calc(100% - 900px), #1d1f24 100%); }
+[data-theme="dark"] .topbar { background: rgba(17, 18, 21, .86); }
+[data-theme="dark"] .pixels { background:
+    conic-gradient(#25272d 25%, #1d1f24 0 50%, #2a2c33 0 75%, #202227 0) 0 0 / 100% clamp(48px, 7vw, 110px); }
+[data-theme="dark"] img[src*="assets/ic-"] { filter: saturate(.3) brightness(1.15); }
+[data-theme="dark"] .win, [data-theme="dark"] .strip-tile { background: #1c1d21; }
+[data-theme="dark"] .ph, [data-theme="dark"] .placeholder { background: linear-gradient(160deg, #23252b, #3a3d46); color: #cfd1d8; }
+[data-theme="dark"] .foot { color: #a9abb3; }
+[data-theme="dark"] .best-view { color: #8b8e97; }
+[data-theme="dark"] .egg-btn { color: #6d7079; }
+[data-theme="dark"] .lb-backdrop { background: rgba(6, 6, 8, .9); }
+[data-theme="dark"] .egg { background: rgba(10, 10, 12, .9); }
+[data-theme="dark"] .pl-now span { color: #b3b5bd; }
+[data-theme="dark"] .player input[type=range] { background: #3a3c44; }
+[data-theme="dark"] .pl-mode, [data-theme="dark"] .pl-head .pl-mode { color: #8a8d96; }
+[data-theme="dark"] .pl-list li[data-k] button:hover { background: #f1efe6; }
+/* the hand-made sticker keeps its shapes, its blues turn slate and its yellow softens */
+[data-theme="dark"] #sticker [fill="#0051ff"], [data-theme="dark"] #sticker [fill="#0400ff"], [data-theme="dark"] #sticker [fill="#1a19f7"],
+[data-theme="dark"] #sticker [fill="#302dfd"], [data-theme="dark"] #sticker [fill="#302dff"] { fill: #3b4150; }
+[data-theme="dark"] #sticker [fill="#ffca1f"] { fill: #e3cf63; }
+[data-theme="dark"] .arrow-deco, [data-theme="dark"] .hero-star, [data-theme="dark"] .brand-star { filter: saturate(.55) brightness(.92); }
+[data-theme="dark"] .megabolt { opacity: .55; }   /* the lightning stays, but quieter */

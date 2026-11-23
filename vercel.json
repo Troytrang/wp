@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/dark", "destination": "/index.html" },
+    { "source": "/bright", "destination": "/index.html" }
+  ]
+}
