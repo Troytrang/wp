@@ -621,3 +621,16 @@ main, .foot { position: relative; z-index: 1; }
 [data-theme="dark"] #sticker [fill="#ffca1f"] { fill: #e3cf63; }
 [data-theme="dark"] .arrow-deco, [data-theme="dark"] .hero-star, [data-theme="dark"] .brand-star { filter: saturate(.55) brightness(.92); }
 [data-theme="dark"] .megabolt { opacity: .55; }   /* the lightning stays, but quieter */
+
+/* "Too bright?" bubble pointing up at the theme switch */
+.theme-hint { position: fixed; z-index: 75; width: max-content; max-width: calc(100vw - 24px);
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px 9px 14px; background: var(--yel); color: var(--ink);
+  border: 3px solid var(--blue-2); box-shadow: 5px 5px 0 var(--ink); font: 700 16px var(--body);
+  opacity: 0; translate: 0 -8px; transition: opacity .3s, translate .35s cubic-bezier(.2,1.5,.4,1); pointer-events: none; }
+.theme-hint[hidden] { display: none; }
+.theme-hint.show { opacity: 1; translate: 0 0; pointer-events: auto; animation: hint-nudge 1.4s .6s ease-in-out 3; }
+.theme-hint b { font: 400 15px var(--display); color: var(--blue-2); }
+.theme-hint::before { content: ""; position: absolute; top: -19px; left: var(--ax, 30px);
+  border: 11px solid transparent; border-bottom: 16px solid var(--yel); border-top: 0; filter: drop-shadow(0 -3px 0 var(--ink)); }
+.theme-hint button { border: 0; background: var(--white); color: var(--blue-2); width: 26px; height: 26px; border-radius: 50%; font: 700 12px var(--body); cursor: pointer; }
+@keyframes hint-nudge { 50% { translate: 0 -6px; } }

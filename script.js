@@ -506,6 +506,28 @@
     document.documentElement.dataset.theme = t; try { localStorage.setItem("theme", t); } catch (er) {}
     eqColours();
   });
+  /* "too bright?" tip pointing at the theme switch: bright theme only, once per visit, after the hero */
+  (() => {
+    const hint = $("#theme-hint"), btn = $("[data-theme-toggle]"); let shown = false, t;
+    try { shown = sessionStorage.getItem("theme-hint") === "1"; } catch (e) {}
+    const place = () => {
+      const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, w = hint.offsetWidth || 300;
+      const left = Math.max(12, Math.min(x - 40, innerWidth - w - 12));
+      hint.style.left = `${left}px`; hint.style.top = `${r.bottom + 14}px`; hint.style.setProperty("--ax", `${x - left - 10}px`);   // arrow under the button
+    };
+    const hide = () => { hint.classList.remove("show"); setTimeout(() => (hint.hidden = true), 300); clearTimeout(t); };
+    function maybeShow() {
+      if (shown || document.documentElement.dataset.theme === "dark" || scrollY < innerHeight * 0.8 || performance.now() < 2500 || !$("#view-note").hidden) return;
+      shown = true; try { sessionStorage.setItem("theme-hint", "1"); } catch (e) {}
+      hint.hidden = false; place(); requestAnimationFrame(() => hint.classList.add("show"));
+      t = setTimeout(hide, 9000);
+    }
+    addEventListener("scroll", maybeShow, { passive: true });
+    addEventListener("resize", () => { if (!hint.hidden) place(); });
+    hint.querySelector("[data-hint-close]").addEventListener("click", hide);
+    btn.addEventListener("click", hide);
+  })();
+
   function drawEq(playing) {
     const w = eq.clientWidth, h = eq.clientHeight; if (!w) return;
     const dpr = Math.min(devicePixelRatio || 1, 2);
