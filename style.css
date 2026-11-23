@@ -555,3 +555,10 @@ main, .foot { position: relative; z-index: 1; }
 @keyframes egg-spin { to { rotate: 360deg; } }
 @keyframes egg-bob { 50% { translate: 0 -14px; rotate: 8deg; } }
 @media (prefers-reduced-motion: reduce) { .egg-burst, .egg-star { animation: none; } }
+
+/* phones: the player strip is fixed along the bottom — let taps through its empty part, and keep the footer above it */
+@media (max-width: 700px) {
+  .player { pointer-events: none; }
+  .player > * { pointer-events: auto; }
+  .foot { padding-bottom: 96px; }
+}
