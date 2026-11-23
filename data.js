@@ -51,7 +51,7 @@ window.PORTFOLIO = {
 
   /* Easter egg: after this many minutes on the page (tab in view), or from the "psst" button in the footer.
      src = the keyed video (colour on top, alpha matte underneath, one H.264 file) — empty: text only. */
-  egg: { afterMinutes: 10, src: "" },
+  egg: { afterMinutes: 10, src: "assets/egg/thanks.mp4" },
 
   sections: [
     {

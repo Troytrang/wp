@@ -522,18 +522,33 @@ main, .foot { position: relative; z-index: 1; }
   background: rgba(10, 14, 120, .88); text-align: center; overflow: hidden; }
 .egg-burst { position: absolute; inset: -20%; z-index: -1; opacity: .9;
   background: repeating-conic-gradient(from 0deg, var(--blue-2) 0 9deg, transparent 9deg 18deg); animation: egg-spin 40s linear infinite; }
-.egg-stage { position: relative; display: grid; place-items: center; }
-.egg-stage canvas { display: none; max-height: 52vh; max-width: 88vw; width: auto; height: auto; filter: drop-shadow(8px 8px 0 var(--ink)); }
+.egg { grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.egg-title .nb { font-size: 1em; }
+.egg { grid-template-rows: 1fr; align-items: center; }
+.egg-stage { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; pointer-events: none; }
+.egg-stage canvas { display: none; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(10px 10px 0 rgba(0,0,0,.45)); }
 .egg.has-video .egg-stage canvas { display: block; }
 .egg.has-video .egg-star { display: none; }
 .egg-star { font-size: clamp(120px, 22vw, 220px); line-height: 1; color: var(--yel); text-shadow: 8px 8px 0 var(--ink); animation: egg-bob 1.2s ease-in-out infinite; }
-.egg-title { margin: 0; font-size: clamp(30px, 6vw, 72px); }
-.egg-sub { margin: 0; font: 700 clamp(18px, 2.4vw, 28px) var(--body); color: var(--white); background: var(--ink); padding: 6px 16px; rotate: -1deg; }
-.egg-close { position: absolute; top: 20px; right: 20px; width: 54px; height: 54px; border-radius: 50%; border: 5px solid var(--white);
+/* text sits in the left and right thirds, the middle stays free for the video */
+.egg-left, .egg-right { position: relative; z-index: 1; }   /* text sits behind the video layer */
+.egg-left { grid-column: 1; justify-self: start; text-align: left; padding-left: clamp(8px, 3vw, 60px); }
+.egg-right { grid-column: 3; justify-self: end; text-align: right; padding-right: clamp(8px, 3vw, 60px); }
+.egg-title { margin: 0; font-size: clamp(18px, 2.3vw, 40px); white-space: nowrap; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; rotate: -3deg; }
+.egg-sub { margin: 0; width: max-content; max-width: 30vw; font: 700 clamp(16px, 1.7vw, 26px)/1.3 var(--body); color: var(--white); background: var(--ink); padding: 10px 18px; rotate: 2deg; box-shadow: 6px 6px 0 var(--blue-2); }
+.egg-sound { position: absolute; left: 50%; bottom: 30px; translate: -50% 0; z-index: 4; font: 400 18px var(--display); color: var(--blue-2);
+  background: var(--yel); border: 4px solid var(--white); padding: 10px 18px; box-shadow: 5px 5px 0 var(--ink); cursor: pointer; }
+.egg-sound[hidden] { display: none; }
+@media (max-width: 700px) {
+  .egg { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; align-items: start; }
+  .egg-left { grid-column: 1; grid-row: 1; } .egg-right { grid-column: 1; grid-row: 3; }
+}
+.egg.in .egg-left { animation: egg-pop .6s .15s cubic-bezier(.2,1.6,.4,1) both; }
+.egg.in .egg-right { animation: egg-pop .6s .3s cubic-bezier(.2,1.6,.4,1) both; }
+.egg-close { position: absolute; z-index: 4; top: 20px; right: 20px; width: 54px; height: 54px; border-radius: 50%; border: 5px solid var(--white);
   background: var(--red); color: var(--white); font-size: 22px; cursor: pointer; box-shadow: 5px 5px 0 var(--ink); }
-.egg.in .egg-stage { animation: egg-pop .6s cubic-bezier(.2,1.6,.4,1) both; }
-.egg.in .egg-title { animation: egg-pop .6s .15s cubic-bezier(.2,1.6,.4,1) both; }
-.egg.in .egg-sub { animation: egg-pop .6s .3s cubic-bezier(.2,1.6,.4,1) both; }
+.egg.in .egg-stage { animation: fadein .5s both; }
 @keyframes egg-pop { from { opacity: 0; scale: .4; rotate: -12deg; } }
 @keyframes egg-spin { to { rotate: 360deg; } }
 @keyframes egg-bob { 50% { translate: 0 -14px; rotate: 8deg; } }

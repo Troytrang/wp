@@ -280,17 +280,32 @@
       }
       raf = requestAnimationFrame(frame);
     }
+    // everything else goes quiet while the egg plays with its own sound, and comes back afterwards
+    const bg = $("#bgm"), soundBtn = egg.querySelector(".egg-sound"); let bgVol = null, fade = 0;
+    function duck(on) {
+      clearInterval(fade);
+      document.querySelectorAll('.mute-btn[aria-pressed="true"]').forEach((m) => m.click());
+      if (on) { if (bg.paused) return; bgVol = bg.volume; }
+      else if (bgVol == null) return;
+      const to = on ? bgVol * 0.12 : bgVol;
+      fade = setInterval(() => { const d = to - bg.volume; if (Math.abs(d) < 0.01) { bg.volume = to; clearInterval(fade); if (!on) bgVol = null; } else bg.volume += d * 0.25; }, 40);
+    }
     function open() {
       egg.hidden = false; egg.classList.remove("in"); void egg.offsetWidth; egg.classList.add("in");
       try { sessionStorage.setItem("egg", "1"); } catch (e) {} seen = true;
       if (E.src) {
         egg.classList.add("has-video");
-        if (!vid) { vid = document.createElement("video"); Object.assign(vid, { src: E.src, muted: true, loop: true, playsInline: true, preload: "auto" }); }
-        vid.currentTime = 0; vid.play().catch(() => {}); cancelAnimationFrame(raf); frame();
+        if (!vid) { vid = document.createElement("video"); Object.assign(vid, { src: E.src, loop: true, playsInline: true, preload: "auto" }); }
+        duck(true);
+        vid.currentTime = 0; vid.muted = false; soundBtn.hidden = true;
+        // with sound if the browser allows it (it does once the visitor has clicked anything); otherwise muted + a button
+        vid.play().catch(() => { vid.muted = true; soundBtn.hidden = false; vid.play().catch(() => {}); });
+        cancelAnimationFrame(raf); frame();
       }
       egg.querySelector(".egg-close").focus();
     }
-    function close() { egg.hidden = true; cancelAnimationFrame(raf); if (vid) vid.pause(); }
+    function close() { egg.hidden = true; cancelAnimationFrame(raf); if (vid) vid.pause(); duck(false); }
+    soundBtn.addEventListener("click", () => { vid.muted = false; vid.play().catch(() => {}); soundBtn.hidden = true; });
     document.addEventListener("click", (e) => {
       if (e.target.closest("[data-egg]")) open();
       else if (!egg.hidden && (e.target.closest("[data-egg-close]") || e.target === egg)) close();
