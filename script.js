@@ -188,6 +188,13 @@
       const more = list.length > PAGE ? `<button class="btn btn-white more" type="button" data-more>LOAD MORE <span>(${list.length - PAGE})</span></button>` : "";
       return `<div class="grid ${cls}">${html}</div>${more}`;
     };
+    // Game Ads: vertical clips in a sliding row of three (← → or swipe) instead of a long grid
+    const slider = (list) => !list.length ? "" : `<div class="vslider" data-slider>
+        <div class="vs-head"><span class="vs-label">VERTICAL ADS</span><span class="vs-count" aria-live="polite"></span></div>
+        <button class="vs-nav vs-prev" type="button" data-vs="-1" aria-label="Previous vertical ads">◀</button>
+        <div class="grid grid-vert vs-track" tabindex="0" aria-label="Vertical ads, scroll sideways">${list.map(({ it, k, proj }) => card(it, k, proj)).join("")}</div>
+        <button class="vs-nav vs-next" type="button" data-vs="1" aria-label="Next vertical ads">▶</button>
+      </div>`;
     const vert = indexed.filter((x) => x.it.format === "vertical"),
           wide = indexed.filter((x) => x.it.format !== "vertical" && ratioOf(x.it) < 2.2),
           ultra = indexed.filter((x) => x.it.format !== "vertical" && ratioOf(x.it) >= 2.2);   // very wide LED walls get their own full-width row
@@ -197,9 +204,9 @@
            <h3 class="panel-title name-block"><span class="nb nb-1">${esc(sec.title[0])}</span><span class="nb nb-2">${esc(sec.title[1])}</span></h3>
            <div class="panel-side"><p>${esc(sec.blurb)}</p>${sec.stat ? `<span class="stat"><b>${esc(sec.stat.value)}</b>${esc(sec.stat.label)}</span>` : ""}</div>
          </div>
-         ${grid(vert, "grid-vert")}
-         ${grid(wide, "grid-wide")}
-         ${grid(ultra, "grid-ultra")}
+         ${sec.id === "game-ads"
+           ? grid(wide, "grid-wide") + grid(ultra, "grid-ultra") + slider(vert)       // landscape first, then the vertical slider
+           : grid(vert, "grid-vert") + grid(wide, "grid-wide") + grid(ultra, "grid-ultra")}
          ${sec.archive ? `<a class="archive" href="${esc(sec.archive.url)}" target="_blank" rel="noopener">
            <span class="archive-k">${esc(sec.archive.kicker || "")}</span>
            <span class="archive-t">${esc(sec.archive.label)} <i aria-hidden="true">↗</i></span></a>` : ""}
@@ -261,6 +268,29 @@
       const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
       if (d) { e.preventDefault(); select(tabBtns[(i + d + tabBtns.length) % tabBtns.length], true); }
     });
+  });
+
+  /* ---------- vertical slider (Game Ads) ---------- */
+  document.querySelectorAll("[data-slider]").forEach((sl) => {
+    const track = sl.querySelector(".vs-track"), count = sl.querySelector(".vs-count"),
+          prev = sl.querySelector(".vs-prev"), next = sl.querySelector(".vs-next");
+    const items = () => [...track.children];
+    const step = () => { const it = items()[0]; return it ? it.offsetWidth + parseFloat(getComputedStyle(track).columnGap || 0) : 1; };
+    const perView = () => Math.max(1, Math.round((track.clientWidth - 2 * parseFloat(getComputedStyle(track).paddingLeft)) / step() + 0.2));
+    function update() {
+      const n = items().length, per = perView(), first = Math.min(Math.round(track.scrollLeft / step()), Math.max(0, n - per));
+      count.textContent = n ? `${first + 1}–${Math.min(first + per, n)} / ${n}` : "";
+      prev.disabled = track.scrollLeft < 4;
+      next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 4;
+    }
+    const go = (dir) => track.scrollBy({ left: dir * perView() * step(), behavior: "smooth" });   // one full set of 3 (2 on phones)
+    sl.addEventListener("click", (e) => { const b = e.target.closest("[data-vs]"); if (b) go(+b.dataset.vs); });
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); go(e.key === "ArrowRight" ? 1 : -1); }
+    });
+    let t; track.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(update, 60); }, { passive: true });
+    addEventListener("resize", update); update();
+    new MutationObserver(update).observe(sl.closest(".panel"), { attributes: true, attributeFilter: ["hidden"] });
   });
 
   /* ---------- easter egg: a thank-you after 10 minutes on the page ---------- */
