@@ -334,7 +334,9 @@
   $("#exp").innerHTML = D.experience.map((x) => `<li><b>${esc(x.company)}</b><span>${esc(x.years)}</span><em>${esc(x.role)}</em></li>`).join("");
   $("#soft").innerHTML = D.software.map((s) => `<li>${esc(s)}</li>`).join("");
   $("#ai").innerHTML = D.ai.map((s) => `<li>${esc(s)}</li>`).join("");
-  $("#stats").innerHTML = D.sections.filter((s) => s.stat).map((s) => `<span class="stat"><b>${esc(s.stat.value)}</b>${esc(s.stat.label)}</span>`).join("");
+  // About: each section's figure ("aboutStat" = shown here only, not on the section itself)
+  $("#stats").innerHTML = D.sections.map((s) => s.aboutStat || s.stat).filter(Boolean)
+    .map((st) => `<span class="stat"><b>${esc(st.value)}</b>${esc(st.label)}</span>`).join("");
 
   /* ---------- contact ---------- */
   const c = D.contact;

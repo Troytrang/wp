@@ -57,6 +57,7 @@ window.PORTFOLIO = {
     {
       id: "game-ads",
       // button after the last clip: the whole library on Drive (no need to put every ad in the sheet)
+      aboutStat: { value: "200+", label: "game ad creatives delivered" },   // About only: the Game Ads tab shows a selection
       archive: { url: "https://drive.google.com/drive/folders/1Kt6w9lhKeUs54yXJ58rXe0qulOYhrSqu", kicker: "Want to see more?", label: "See the full archive" },
       num: "01",
       title: ["GAME", "ADS"],
