@@ -197,6 +197,9 @@
          ${grid(vert, "grid-vert")}
          ${grid(wide, "grid-wide")}
          ${grid(ultra, "grid-ultra")}
+         ${sec.archive ? `<a class="archive" href="${esc(sec.archive.url)}" target="_blank" rel="noopener">
+           <span class="archive-k">${esc(sec.archive.kicker || "")}</span>
+           <span class="archive-t">${esc(sec.archive.label)} <i aria-hidden="true">↗</i></span></a>` : ""}
        </div>`);
   });
   // "LOAD MORE": reveal the next PAGE cards of that grid
