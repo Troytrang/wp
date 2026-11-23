@@ -520,8 +520,10 @@ main, .foot { position: relative; z-index: 1; }
 .egg[hidden] { display: none; }
 .egg { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; align-content: center; gap: 18px; padding: 24px;
   background: rgba(10, 14, 120, .88); text-align: center; overflow: hidden; }
-.egg-burst { position: absolute; inset: -20%; z-index: -1; opacity: .9;
-  background: repeating-conic-gradient(from 0deg, var(--blue-2) 0 9deg, transparent 9deg 18deg); animation: egg-spin 40s linear infinite; }
+/* a square much bigger than the screen's diagonal, spinning round its own centre = the screen's centre,
+   so the rays always reach every corner and no edge ever sweeps into view */
+.egg-burst { position: absolute; left: 50%; top: 50%; width: 160vmax; height: 160vmax; margin: -80vmax 0 0 -80vmax; z-index: -1; opacity: .9; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, var(--blue-2) 0 9deg, transparent 9deg 18deg); animation: egg-spin 60s linear infinite; will-change: rotate; }
 .egg { grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .egg-title .nb { font-size: 1em; }
