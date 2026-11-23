@@ -247,8 +247,6 @@
       ring.classList.add("on", "draw");                                      // …then the marker draws itself round the next tab
       timer = setTimeout(() => { ring.classList.remove("on"); timer = setTimeout(() => { k = (k + 1) % tabBtns.length; draw(); }, 450); }, 2500);
     }
-    const stop = () => { stopped = true; clearTimeout(timer); ring.classList.remove("on"); };
-    tabBtns.forEach((b) => b.addEventListener("click", stop));          // once someone uses the tabs, the hint has done its job
     new IntersectionObserver(([en]) => {
       visible = en.isIntersecting;
       if (visible && !stopped && !timer) draw();
