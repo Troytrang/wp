@@ -567,7 +567,7 @@ main, .foot { position: relative; z-index: 1; }
 .vslider { position: relative; margin: 30px auto 0; max-width: min(100%, calc(3 * 62vh * 0.5625 + 220px)); }   /* 3 frames that fit the screen height */
 .vs-head { display: flex; align-items: center; justify-content: space-between; margin: 0 8px 4px; }
 .vs-label { font: 400 18px var(--display); color: var(--blue-2); background: var(--yel); padding: 4px 12px; rotate: -1.5deg; box-shadow: 4px 4px 0 var(--ink); }
-.vs-count { font: 400 18px var(--display); color: var(--yel); }
+.vs-count { font: 400 18px var(--display); color: var(--yel); background: var(--ink); padding: 4px 12px; rotate: 1.5deg; box-shadow: 4px 4px 0 var(--blue-2); }   /* own badge: readable on blue and on the yellow bolt */
 .grid-vert.vs-track { display: flex; justify-content: flex-start; --vs-gap: 74px; --vs-per: 3; gap: var(--vs-gap); max-width: none; margin: 0; padding: 40px 36px 50px; overflow-x: auto; overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory; scroll-padding: 0 36px; scrollbar-width: none; }
 .vs-track::-webkit-scrollbar { display: none; }
