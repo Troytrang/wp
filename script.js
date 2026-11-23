@@ -451,6 +451,7 @@
     $("#lb-title").textContent = it.title + (v.src && v.src === it.previewSrc ? " · Highlight" : "");
     $("#lb-title").dataset.silent = it.sound === false ? "1" : "";
     syncMusic(it);
+    hqTip(v);
     $("#lb-count").textContent = list.length > 1 ? `${pos + 1} / ${list.length}` : "";
     const ar = ratioOf(it);
     dialog.classList.remove("vert");
@@ -495,6 +496,18 @@
     if (e.target.closest("[data-close]")) close();
     if (e.target.closest("[data-prev]")) show(pos - 1);
     if (e.target.closest("[data-next]")) show(pos + 1);
+  });
+  // reminder to switch YouTube / Drive to their highest quality (they often start low); shown until "Got it"
+  const tip = $("#hq-tip"); let tipT;
+  function hqTip(v) {
+    let off = false; try { off = localStorage.getItem("hq-tip") === "1"; } catch (e) {}
+    clearTimeout(tipT); tip.classList.remove("show");
+    if (off || !v || (v.kind !== "yt" && v.kind !== "drive")) { tip.hidden = true; return; }
+    tip.hidden = false; void tip.offsetWidth; tip.classList.add("show");
+    tipT = setTimeout(() => tip.classList.remove("show"), 7000);
+  }
+  tip.querySelector("[data-hq-off]").addEventListener("click", () => {
+    tip.classList.remove("show"); try { localStorage.setItem("hq-tip", "1"); } catch (e) {}
   });
   // silent clips (most LED visuals) keep the site music going; clips with sound pause it
   function syncMusic(it) {
