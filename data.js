@@ -53,7 +53,6 @@ window.PORTFOLIO = {
       title: ["GAME", "ADS"],
       icon: "assets/ic-game.svg",
       blurb: "Game ads, gameplay videos and trailers for mobile titles — Hybrid-Casual and Action RPG.",
-      stat: { value: "~200", label: "game ad creatives produced" },
       items: [
         { title: "Game Ad #1", tags: ["Hybrid-Casual", "Game Ad"], year: "2025", format: "vertical", video: "" },
         { title: "Game Ad #2", tags: ["Action RPG", "Gameplay"], year: "2025", format: "vertical", video: "" },
