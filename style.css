@@ -490,3 +490,26 @@ main, .foot { position: relative; z-index: 1; }
   .hq-tip p { white-space: normal; } }
 @keyframes hq-spin { to { rotate: 360deg; } }
 @media (prefers-reduced-motion: reduce) { .hq-tip svg { animation: none; } }
+
+/* ---------- phones: denser work grid (2 vertical ads per row, slimmer paper frames) ---------- */
+@media (max-width: 700px) {
+  .grid { gap: 34px 16px; }
+  .grid-vert { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 40px; }
+  .grid-wide, .grid-ultra { grid-template-columns: minmax(0, 1fr); }
+  .item, .frame-lg { margin: 12px 12px 14px 10px; }
+  .frame .p1 { inset: -12px -13px -14px -11px; }
+  .frame .p2 { inset: -7px -8px -9px -7px; }
+  .frame .p3 { inset: -4px; }
+  .item:hover .frame, .item:focus-within .frame { transform: none; }
+  .item-cap { margin-top: 16px; }
+  .item-cap span { font-size: 14px; padding: 4px 8px; }
+  .sound { display: none; }
+  .mute-btn { width: 34px; height: 34px; right: 6px; top: 6px; font-size: 15px; border-width: 2px; }
+  .clip-strip { gap: 6px; margin-top: 24px; }
+  .item-cap + .clip-strip { margin-top: 10px; }
+  .strip-tile { border-width: 2px; box-shadow: 2px 2px 0 var(--ink); }
+  .panel-side p { font-size: 17px; }
+  .panel-head { margin-bottom: 20px; }
+  .tabs { gap: 12px; margin-bottom: 34px; }
+  .archive { margin-top: 30px; padding: 12px 18px; }
+}
