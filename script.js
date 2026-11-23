@@ -437,7 +437,7 @@
   eq.className = "eq-wall"; eq.setAttribute("aria-hidden", "true"); document.body.appendChild(eq);
   const ectx = eq.getContext("2d");
   function startViz() {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // no reduced-motion check here: the visitor switched the music on themselves, and asked for it to move with the beat
     try {
       if (!actx) {
         actx = new (window.AudioContext || window.webkitAudioContext)();
