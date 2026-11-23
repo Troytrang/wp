@@ -564,12 +564,12 @@ main, .foot { position: relative; z-index: 1; }
 }
 
 /* ---------- Game Ads: vertical clips in a sliding row of three ---------- */
-.vslider { position: relative; margin: 30px auto 0; max-width: min(100%, calc(3 * 62vh * 0.5625 + 140px)); }   /* 3 frames that fit the screen height */
+.vslider { position: relative; margin: 30px auto 0; max-width: min(100%, calc(3 * 62vh * 0.5625 + 220px)); }   /* 3 frames that fit the screen height */
 .vs-head { display: flex; align-items: center; justify-content: space-between; margin: 0 8px 4px; }
 .vs-label { font: 400 18px var(--display); color: var(--blue-2); background: var(--yel); padding: 4px 12px; rotate: -1.5deg; box-shadow: 4px 4px 0 var(--ink); }
 .vs-count { font: 400 18px var(--display); color: var(--yel); }
-.grid-vert.vs-track { display: flex; justify-content: flex-start; --vs-gap: 40px; --vs-per: 3; gap: var(--vs-gap); max-width: none; margin: 0; padding: 40px 30px 50px; overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory; scroll-padding: 0 30px; scrollbar-width: none; }
+.grid-vert.vs-track { display: flex; justify-content: flex-start; --vs-gap: 74px; --vs-per: 3; gap: var(--vs-gap); max-width: none; margin: 0; padding: 40px 36px 50px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scroll-padding: 0 36px; scrollbar-width: none; }
 .vs-track::-webkit-scrollbar { display: none; }
 .vs-track > .item { flex: 0 0 calc((100% - (var(--vs-per) - 1) * var(--vs-gap)) / var(--vs-per)); min-width: 0; scroll-snap-align: start; margin: 0; }
 .vs-track::after { content: ""; flex: 0 0 1px; }   /* keeps the right padding when scrolled to the end */
@@ -580,7 +580,7 @@ main, .foot { position: relative; z-index: 1; }
 .vs-nav:hover { transform: scale(1.08); background: var(--white); }
 .vs-nav:disabled { opacity: 0; pointer-events: none; }
 @media (max-width: 700px) {
-  .grid-vert.vs-track { --vs-gap: 18px; --vs-per: 2; padding: 26px 16px 34px; scroll-padding: 0 16px; }
+  .grid-vert.vs-track { --vs-gap: 36px; --vs-per: 2; padding: 26px 16px 34px; scroll-padding: 0 16px; }
   .vs-nav { width: 42px; height: 42px; font-size: 15px; }
   .vs-prev { left: -6px; } .vs-next { right: -6px; }
   .vs-label, .vs-count { font-size: 15px; }
