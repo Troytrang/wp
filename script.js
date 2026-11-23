@@ -66,8 +66,11 @@
       loop: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0&playsinline=1&rel=0&modestbranding=1&disablekb=1&enablejsapi=1`,
       thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
     m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-    if (m) return { kind: "vimeo", id: m[1], embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1`,
-      loop: `https://player.vimeo.com/video/${m[1]}?background=1`, thumb: null };
+    if (m) return { kind: "vimeo", id: m[1], embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1&title=0&byline=0&portrait=0&dnt=1`,
+      // background=1 only works on paid Vimeo plans, so the preview uses the plain muted-autoplay
+      // parameters (allowed on every plan); the cover picture comes from vumbnail.com (public videos)
+      loop: `https://player.vimeo.com/video/${m[1]}?autoplay=1&muted=1&loop=1&autopause=0&controls=0&title=0&byline=0&portrait=0&badge=0&dnt=1`,
+      thumb: `https://vumbnail.com/${m[1]}.jpg` };
     m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})/);
     if (m) return { kind: "drive", id: m[1], embed: `https://drive.google.com/file/d/${m[1]}/preview`,
       loop: null, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1000` };   // Drive can't autoplay: thumbnail only, plays on click
