@@ -513,3 +513,28 @@ main, .foot { position: relative; z-index: 1; }
   .tabs { gap: 12px; margin-bottom: 34px; }
   .archive { margin-top: 30px; padding: 12px 18px; }
 }
+
+/* ---------- easter egg ---------- */
+.egg-btn { display: block; margin: 10px auto 0; border: 0; background: none; color: #6f75c9; font: 600 13px var(--body); letter-spacing: 1px; cursor: pointer; }
+.egg-btn:hover { color: var(--yel); }
+.egg[hidden] { display: none; }
+.egg { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; align-content: center; gap: 18px; padding: 24px;
+  background: rgba(10, 14, 120, .88); text-align: center; overflow: hidden; }
+.egg-burst { position: absolute; inset: -20%; z-index: -1; opacity: .9;
+  background: repeating-conic-gradient(from 0deg, var(--blue-2) 0 9deg, transparent 9deg 18deg); animation: egg-spin 40s linear infinite; }
+.egg-stage { position: relative; display: grid; place-items: center; }
+.egg-stage canvas { display: none; max-height: 52vh; max-width: 88vw; width: auto; height: auto; filter: drop-shadow(8px 8px 0 var(--ink)); }
+.egg.has-video .egg-stage canvas { display: block; }
+.egg.has-video .egg-star { display: none; }
+.egg-star { font-size: clamp(120px, 22vw, 220px); line-height: 1; color: var(--yel); text-shadow: 8px 8px 0 var(--ink); animation: egg-bob 1.2s ease-in-out infinite; }
+.egg-title { margin: 0; font-size: clamp(30px, 6vw, 72px); }
+.egg-sub { margin: 0; font: 700 clamp(18px, 2.4vw, 28px) var(--body); color: var(--white); background: var(--ink); padding: 6px 16px; rotate: -1deg; }
+.egg-close { position: absolute; top: 20px; right: 20px; width: 54px; height: 54px; border-radius: 50%; border: 5px solid var(--white);
+  background: var(--red); color: var(--white); font-size: 22px; cursor: pointer; box-shadow: 5px 5px 0 var(--ink); }
+.egg.in .egg-stage { animation: egg-pop .6s cubic-bezier(.2,1.6,.4,1) both; }
+.egg.in .egg-title { animation: egg-pop .6s .15s cubic-bezier(.2,1.6,.4,1) both; }
+.egg.in .egg-sub { animation: egg-pop .6s .3s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes egg-pop { from { opacity: 0; scale: .4; rotate: -12deg; } }
+@keyframes egg-spin { to { rotate: 360deg; } }
+@keyframes egg-bob { 50% { translate: 0 -14px; rotate: 8deg; } }
+@media (prefers-reduced-motion: reduce) { .egg-burst, .egg-star { animation: none; } }

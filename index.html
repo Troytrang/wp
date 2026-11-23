@@ -96,7 +96,16 @@
 </main>
 
 <footer class="foot">© <span id="yr"></span> Lương Nguyễn Thu Trang · Video Editor
-  <small class="best-view">Best experienced on a desktop browser, with sound on.</small></footer>
+  <small class="best-view">Best experienced on a desktop browser, with sound on.</small>
+  <button class="egg-btn" type="button" data-egg>★ psst… click me</button></footer>
+
+<div class="egg" id="egg" role="dialog" aria-modal="true" aria-labelledby="egg-title" hidden>
+  <button class="egg-close" type="button" data-egg-close aria-label="Close">✕</button>
+  <div class="egg-burst" aria-hidden="true"></div>
+  <div class="egg-stage"><canvas id="egg-canvas" aria-hidden="true"></canvas><span class="egg-star" aria-hidden="true">★</span></div>
+  <h2 class="egg-title name-block" id="egg-title"><span class="nb nb-1">STILL HERE AFTER</span><span class="nb nb-2">10 MINUTES?!</span></h2>
+  <p class="egg-sub">Thank you so much for staying this long 💛</p>
+</div>
 
 <div class="view-note" id="view-note" role="note" hidden>
   <p><b>Viewing on a phone?</b> This portfolio is best experienced on a desktop browser — larger previews, the full music player and sound.</p>

@@ -32,7 +32,12 @@ window.PORTFOLIO = {
       { src: "assets/music/10-snakes-instrumental-version.mp3", title: "Snakes (Instrumental)", artist: "Onoe Caponoe" },
       { src: "assets/music/11-payday.mp3", title: "PAYDAY", artist: "BLUE STEEL" },
       { src: "assets/music/12-in-vain.mp3", title: "In Vain", artist: "Kouba" },
-      { src: "assets/music/13-divine.mp3", title: "Divine", artist: "Janset" }
+      { src: "assets/music/13-divine.mp3", title: "Divine", artist: "Janset" },
+      { src: "assets/music/14-i-need-somewhere.mp3", title: "I Need Somewhere", artist: "Eva Hummingbird" },
+      { src: "assets/music/15-mojo.mp3", title: "MOJO", artist: "Nic Hanson" },
+      { src: "assets/music/16-home-again.mp3", title: "Home Again", artist: "Park Lane" },
+      { src: "assets/music/17-energy-drink.mp3", title: "Energy Drink", artist: "Def Lev" },
+      { src: "assets/music/18-burn-bright-rage-on.mp3", title: "Burn Bright, Rage On", artist: "PW" }
     ]
   },
 
@@ -43,6 +48,10 @@ window.PORTFOLIO = {
     "VTC Booth at A80 2025": { src: "assets/led/a80-preview.mp4", poster: "assets/led/a80-preview.jpg", frame: "3200x384",
       viewer: "preview" }   // the YouTube copy is squeezed: show the highlight until the 3200×800 version is up, then use ytPad: 4
   },
+
+  /* Easter egg: after this many minutes on the page (tab in view), or from the "psst" button in the footer.
+     src = the keyed video (colour on top, alpha matte underneath, one H.264 file) — empty: text only. */
+  egg: { afterMinutes: 10, src: "" },
 
   sections: [
     {

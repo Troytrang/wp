@@ -263,6 +263,47 @@
     });
   });
 
+  /* ---------- easter egg: a thank-you after 10 minutes on the page ---------- */
+  (() => {
+    const egg = $("#egg"), cv = $("#egg-canvas"), cx = cv.getContext("2d", { willReadFrequently: true });
+    const E = D.egg || {}; let vid = null, raf = 0, seen = false, active = 0;
+    try { seen = sessionStorage.getItem("egg") === "1"; } catch (e) {}
+    function frame() {
+      // packed video: top half = picture, bottom half = alpha matte (white = keep)
+      if (vid && vid.readyState >= 2) {
+        const w = vid.videoWidth, h = vid.videoHeight / 2;
+        if (cv.width !== w) { cv.width = w; cv.height = h; }
+        cx.drawImage(vid, 0, 0, w, h, 0, 0, w, h); const img = cx.getImageData(0, 0, w, h);
+        cx.drawImage(vid, 0, h, w, h, 0, 0, w, h); const m = cx.getImageData(0, 0, w, h).data, d = img.data;
+        for (let i = 3; i < d.length; i += 4) d[i] = m[i - 3];
+        cx.putImageData(img, 0, 0);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    function open() {
+      egg.hidden = false; egg.classList.remove("in"); void egg.offsetWidth; egg.classList.add("in");
+      try { sessionStorage.setItem("egg", "1"); } catch (e) {} seen = true;
+      if (E.src) {
+        egg.classList.add("has-video");
+        if (!vid) { vid = document.createElement("video"); Object.assign(vid, { src: E.src, muted: true, loop: true, playsInline: true, preload: "auto" }); }
+        vid.currentTime = 0; vid.play().catch(() => {}); cancelAnimationFrame(raf); frame();
+      }
+      egg.querySelector(".egg-close").focus();
+    }
+    function close() { egg.hidden = true; cancelAnimationFrame(raf); if (vid) vid.pause(); }
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("[data-egg]")) open();
+      else if (!egg.hidden && (e.target.closest("[data-egg-close]") || e.target === egg)) close();
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !egg.hidden) close(); });
+    // count only the time the page is actually being looked at
+    const need = (E.afterMinutes || 10) * 60;
+    const t = setInterval(() => {
+      if (document.hidden) return;
+      if (++active >= need) { clearInterval(t); if (!seen && lb.hidden) open(); }
+    }, 1000);
+  })();
+
   /* ---------- "best on desktop" note: phones and tablets, once per visitor ---------- */
   (() => {
     const note = $("#view-note"); let seen = false;
