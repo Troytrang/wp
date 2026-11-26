@@ -17,31 +17,33 @@
   const charm = $("#charm"), face = $("#face");
   face.onload = () => { face.hidden = false; $("#pix-face").hidden = true; };
   face.src = "/zine/img/face.jpg";
-  /* drag it around: it swings with the movement and stays where it is dropped; a plain click still opens it */
-  let drag = null, dragged = false, dx = 0, dy = 0, ang = 0, angV = 0, target = 0, raf = 0, lastX = 0;
-  function physics() {
-    angV += (target - ang) * 0.12; angV *= 0.86; ang += angV; target *= 0.9;
+  /* it stays on its hook: grab it and swing it round the hook (a full spin works too); let go and it swings back like a pendulum */
+  let drag = null, dragged = false, ang = 0, angV = 0, raf = 0;
+  const deg = (r) => r * 180 / Math.PI;
+  const pointerAng = (e) => deg(-Math.atan2(e.clientX - drag.cx, e.clientY - drag.cy));
+  function swing() {
+    if (!drag) { angV += -Math.sin(ang * Math.PI / 180) * 0.9; angV *= 0.985; ang += angV; }   // gravity + air
     charm.style.rotate = `${ang.toFixed(2)}deg`;
-    if (drag || Math.abs(angV) > 0.02 || Math.abs(ang) > 0.05) raf = requestAnimationFrame(physics);
-    else { raf = 0; charm.style.rotate = ""; charm.style.animation = ""; }      // settle back into the idle sway
+    if (drag || Math.abs(angV) > 0.03 || Math.abs(((ang % 360) + 540) % 360 - 180) > 0.3) raf = requestAnimationFrame(swing);
+    else { raf = 0; ang = 0; charm.style.rotate = ""; charm.style.animation = ""; }           // back to the idle sway
   }
   charm.addEventListener("pointerdown", (e) => {
     if (e.button) return;
-    drag = { x: e.clientX, y: e.clientY, dx, dy }; dragged = false; lastX = e.clientX;
+    const r = charm.querySelector(".charm-ring").getBoundingClientRect();
+    drag = { cx: r.left + r.width / 2, cy: r.top + r.height / 2, x: e.clientX, y: e.clientY };
+    drag.last = pointerAng(e); dragged = false;
+    if (!raf) { const m = getComputedStyle(charm).rotate; ang = m && m !== "none" ? parseFloat(m) : 0; }
     charm.setPointerCapture(e.pointerId);
   });
   charm.addEventListener("pointermove", (e) => {
     if (!drag) return;
-    const mx = e.clientX - drag.x, my = e.clientY - drag.y;
-    if (!dragged && Math.hypot(mx, my) < 6) return;
-    if (!dragged) { dragged = true; charm.classList.add("dragging"); charm.style.animation = "none"; if (!raf) raf = requestAnimationFrame(physics); }
-    dx = drag.dx + mx; dy = drag.dy + my;
-    charm.style.translate = `${dx}px ${dy}px`;
-    target = Math.max(-55, Math.min(55, -(e.clientX - lastX) * 2.2)); lastX = e.clientX;   // hangs back against the motion
+    if (!dragged && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    if (!dragged) { dragged = true; charm.classList.add("dragging"); charm.style.animation = "none"; if (!raf) raf = requestAnimationFrame(swing); }
+    const a = pointerAng(e); let d = a - drag.last; d -= Math.round(d / 360) * 360;   // no jump when passing the top
+    ang += d; angV = d; drag.last = a;
   });
-  const end = () => { if (!drag) return; drag = null; charm.classList.remove("dragging"); if (!raf) raf = requestAnimationFrame(physics); };
+  const end = () => { if (!drag) return; drag = null; charm.classList.remove("dragging"); if (!raf) raf = requestAnimationFrame(swing); };
   charm.addEventListener("pointerup", end); charm.addEventListener("pointercancel", end);
-  charm.addEventListener("dblclick", () => { dx = dy = 0; charm.style.translate = ""; });   // double-click: back on its hook
   charm.addEventListener("click", (e) => {
     if (dragged) { dragged = false; e.preventDefault(); return; }
     const open = charm.classList.toggle("open");
