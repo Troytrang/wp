@@ -5,6 +5,14 @@
   const fold = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase().trim();
   const abs = (p) => /^(https?:)?\//.test(p) ? p : "/" + p;      // data.js paths are written for the root page
 
+  /* ---------- VHS tape: running timecode (25 fps) ---------- */
+  const tc = $("#tc"), t0 = performance.now(), p2 = (n) => String(n).padStart(2, "0");
+  (function tick() {
+    const f = Math.floor((performance.now() - t0) / 40);
+    tc.textContent = `${p2(Math.floor(f / 90000))}:${p2(Math.floor(f / 1500) % 60)}:${p2(Math.floor(f / 25) % 60)}:${p2(f % 25)}`;
+    requestAnimationFrame(tick);
+  })();
+
   /* ---------- small text bits ---------- */
   const d = new Date(), M = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
   $("#updated").textContent = `${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`;
