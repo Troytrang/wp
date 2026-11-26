@@ -235,7 +235,7 @@
   function paint() {
     const on = !bgm.paused;
     mini.classList.toggle("on", on);
-    $("#now").textContent = bgm.src ? `${TR[cur].title} — ${TR[cur].artist}` : "music off";
+    $("#now").textContent = bgm.src ? `${TR[cur].title} — ${TR[cur].artist}` : "play some music ♪";
     const p = mini.querySelector(".mini-play"); p.textContent = on ? "❚❚" : "▶"; p.setAttribute("aria-label", on ? "Pause" : "Play");
     mlist.querySelectorAll("li").forEach((li, k) => li.classList.toggle("on", k === cur && !!bgm.src));
   }
