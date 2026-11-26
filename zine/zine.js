@@ -17,8 +17,14 @@
   const d = new Date(), M = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
   $("#updated").textContent = `${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`;
   $("#yr").textContent = d.getFullYear();
-  $("#soft").textContent = D.software.join(", ");
-  $("#ai").textContent = D.ai.join(", ");
+  // software as little app tiles (abbreviation + full name)
+  const ICON = { "after effects": ["Ae", "#3b2a6b", "#c9a7ff"], "premiere pro": ["Pr", "#2a1f5c", "#a7a2ff"], "photoshop": ["Ps", "#0f2a44", "#6fc4ff"],
+    "illustrator": ["Ai", "#3a2008", "#ffad3b"], "blender": ["Bl", "#2b2b2b", "#ff9a2e"], "google veo": ["Veo", "#13233f", "#8ab4ff"],
+    "kling ai": ["Kl", "#10261d", "#62e0a1"], "dreamania": ["Dm", "#3a1230", "#ff8bd1"] };
+  const tile = (n) => { const [ab, bg, fg] = ICON[fold(n)] || [n.slice(0, 2), "#222", "#c3d84a"];
+    return `<li><span class="app" style="background:${bg};color:${fg};border-color:${fg}">${esc(ab)}</span><span>${esc(n)}</span></li>`; };
+  $("#soft").innerHTML = D.software.map(tile).join("");
+  $("#ai").innerHTML = D.ai.map(tile).join("");
   $("#exp").innerHTML = D.experience.map((e) => `<div class="exp-item"><b>${esc(e.company)} · ${esc(e.years)}</b><span>${esc(e.role)}</span></div>`).join("");
   const C = D.contact;
   $("#mail").textContent = `✉ ${C.email}`;
@@ -177,30 +183,34 @@
     if (all.length) open(all, Math.floor(Math.random() * all.length));
   });
 
-  /* ---------- music tiles ---------- */
-  const bgm = $("#bgm"), TR = D.music.tracks, COLS = ["#c3d84a", "#9b87e8", "#e58a6c", "#f2f0e1", "#7fc8d6", "#e8c04a"];
+  /* ---------- mini music player (corner) ---------- */
+  const bgm = $("#bgm"), TR = D.music.tracks, mini = $("#mini"), mlist = $("#mini-list");
   bgm.volume = D.music.volume ?? 0.35;
-  let cur = -1;
-  $("#tracks").innerHTML = TR.map((t, i) => `<button class="track" type="button" data-t="${i}" aria-label="Play ${esc(t.title)} by ${esc(t.artist)}">
-    <span class="art" style="background:${COLS[i % COLS.length]}">${esc(t.title.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase())}</span>
-    <span class="t">${esc(t.title)}</span><span class="a">${esc(t.artist)}</span></button>`).join("");
+  let cur = 0;
+  $("#tracks").innerHTML = TR.map((t, i) => `<li><button type="button" data-t="${i}"><b>${esc(t.title)}</b> <span>${esc(t.artist)}</span></button></li>`).join("");
+  function load(i) { cur = (i + TR.length) % TR.length; bgm.src = abs(TR[cur].src); }
   function paint() {
-    document.querySelectorAll(".track").forEach((b) => b.classList.toggle("on", +b.dataset.t === cur && !bgm.paused));
-    $("#now").textContent = cur < 0 ? "click a tile to play ♪" : `${bgm.paused ? "❚❚ paused" : "♪ now playing"}: ${TR[cur].title} — ${TR[cur].artist}`;
+    const on = !bgm.paused;
+    mini.classList.toggle("on", on);
+    $("#now").textContent = bgm.src ? `${TR[cur].title} — ${TR[cur].artist}` : "music off";
+    const p = mini.querySelector(".mini-play"); p.textContent = on ? "❚❚" : "▶"; p.setAttribute("aria-label", on ? "Pause" : "Play");
+    mlist.querySelectorAll("li").forEach((li, k) => li.classList.toggle("on", k === cur && !!bgm.src));
   }
-  $("#tracks").addEventListener("click", (e) => {
-    const b = e.target.closest(".track"); if (!b) return;
-    const i = +b.dataset.t;
-    if (i === cur) { bgm.paused ? bgm.play() : bgm.pause(); }
-    else { cur = i; bgm.src = abs(TR[i].src); bgm.play().catch(() => {}); }
+  mini.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-t]"), m = e.target.closest("[data-m]")?.dataset.m;
+    if (t) { load(+t.dataset.t); bgm.play().catch(() => {}); }
+    if (m === "play") { if (!bgm.src) load(0); bgm.paused ? bgm.play().catch(() => {}) : bgm.pause(); }
+    if (m === "next" || m === "prev") { load(cur + (m === "next" ? 1 : -1)); bgm.play().catch(() => {}); }
+    if (m === "list") { mlist.hidden = !mlist.hidden; e.target.closest("button").setAttribute("aria-expanded", !mlist.hidden); }
     paint();
   });
-  bgm.addEventListener("ended", () => { cur = (cur + 1) % TR.length; bgm.src = abs(TR[cur].src); bgm.play().catch(() => {}); paint(); });
+  document.addEventListener("click", (e) => { if (!mlist.hidden && !e.target.closest("#mini")) { mlist.hidden = true; } });
+  bgm.addEventListener("ended", () => { load(cur + 1); bgm.play().catch(() => {}); });
   bgm.addEventListener("play", paint); bgm.addEventListener("pause", paint);
 
   /* ---------- people ---------- */
   const PEOPLE = [
-    { n: "VTC INTERCOM", c: "#2340ff", ini: "VTC", note: "my home team ♥ game ads, trailers and the LED walls for GameVerse 2025 & 2026, the A80 booth and ITC 20. our game Arcane Hunter won Vietnamese Game of the Year!!" },
+    { n: "VTC INTERCOM", c: "#2340ff", ini: "VTC", note: "game ads, trailers and the LED walls for GameVerse 2025 & 2026, the A80 booth and ITC 20. our game Arcane Hunter won Vietnamese Game of the Year!!" },
     { n: "HG MEDIA", c: "#e44438", ini: "HG", note: "where i learned to cut fast — YouTube channels with ~1M views every month. thumbnails, hooks, retention, the whole thing." },
     { n: "KAMI", c: "#7a3fe0", ini: "K", note: "a mother & baby care brand. made their brand film and a product video (2026) — soft, warm, very different from game ads!" },
     { n: "SAIGONCHILL", c: "#111208", ini: "SC", note: "freelance LED visuals for the Halloween 2025 show. spooky, loud, super fun to make." }

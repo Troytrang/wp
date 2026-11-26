@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="/zine/zine.css">
 </head>
 <body>
-<div class="bg" aria-hidden="true"><img class="bg-bolt b1" src="/zine/img/tia-set.svg" alt=""><img class="bg-bolt b2" src="/zine/img/tia-set.svg" alt=""></div>
+<div class="bg" aria-hidden="true"></div>
 
 <div class="page">
   <!-- top bar -->
@@ -44,15 +44,13 @@
         </div>
       </div>
       <p class="pfp-tag">&gt;&gt; <u>VIDEO</u>/<u>EDITOR</u>, HANOI</p>
-      <img class="deco-star s1" src="/zine/img/dau-sao.svg" alt="">
     </div>
     <div class="hello">
-      <h1 class="graffiti">THU TRANG!</h1>
+      <h1 class="keys" aria-label="Thu Trang"><span class="w1"><i>T</i><i>H</i><i>U</i></span><span class="w2"><i>T</i><i>R</i><i>A</i><i>N</i><i>G</i><i class="bang">!</i></span></h1>
       <div class="scrollbox paper" tabindex="0">
         <p>HELLO!! im Trang, i cut videos B:)</p>
         <p class="hint">(this is scrollable)</p>
         <p>Video editor for <mark>game ads</mark>, <mark>LED stage visuals</mark> and <mark>brand films</mark>. Currently at VTC Intercom, freelancing on the side.</p>
-        <p>I like fast hooks, clean cuts, big screens and making a 6400px-wide LED wall look good.</p>
         <p>~ scroll more for the stuff below ~</p>
       </div>
     </div>
@@ -64,8 +62,9 @@
     <div class="win dark">
       <h2 class="win-h">&gt;&gt;Software&lt;&lt;</h2>
       <div class="scrollbox" tabindex="0">
-        <p class="center">^ <span id="soft"></span></p>
-        <p class="center dim">+ AI tools: <span id="ai"></span></p>
+        <ul class="tools" id="soft"></ul>
+        <p class="tools-h">+ AI TOOLS</p>
+        <ul class="tools" id="ai"></ul>
       </div>
     </div>
     <div class="win grey">
@@ -83,17 +82,6 @@
     <p class="xp-foot" id="xp-foot"></p>
   </section>
 
-  <section class="music">
-    <div class="win dark music-win">
-      <h2 class="win-h left">&gt;&gt; BANGER MUSIC !!</h2>
-      <div class="tracks" id="tracks"></div>
-      <p class="now" id="now">click a tile to play ♪</p>
-    </div>
-    <div class="music-side">
-      <div class="side-frame"><img src="/zine/img/icon-clapper.svg" alt=""><img src="/zine/img/icon-tay-cam.svg" alt=""><img src="/zine/img/icon-man-hinh.svg" alt=""></div>
-      <img class="deco-star s2" src="/zine/img/dau-sao.svg" alt="">
-    </div>
-  </section>
 
   <section class="win people" aria-labelledby="ppl-h">
     <h2 class="ppl-h" id="ppl-h"><span aria-hidden="true">👥</span> VERY COOL PEOPLE I'VE WORKED WITH!!</h2>
@@ -104,7 +92,8 @@
 
   <section class="bye" id="contact">
     <div class="bubble">
-      <p><i>WAITTTTT!!!</i> before you go, consider hiring&nbsp;me&nbsp;!</p>
+      <p class="b1"><i>WAITTTTT!!!</i></p>
+      <p class="b2">before you go,<br>consider hiring me!</p>
       <p class="face">:( &lt;33</p>
     </div>
     <div class="contact-pills">
@@ -129,6 +118,18 @@
     <div class="pl-bar"><button type="button" data-step="-1" aria-label="Previous video">◀ PREV</button><span id="pl-count"></span><button type="button" data-step="1" aria-label="Next video">NEXT ▶</button></div>
   </div>
 </div>
+<!-- mini music player, bottom-left corner -->
+<aside class="mini" id="mini" aria-label="Music player">
+  <div class="mini-list" id="mini-list" hidden><p class="mini-lh">&gt;&gt; BANGER MUSIC !!</p><ol id="tracks"></ol></div>
+  <div class="mini-bar">
+    <span class="mini-ico" aria-hidden="true">♪</span>
+    <span class="mini-now" id="now">music off</span>
+    <button type="button" data-m="prev" aria-label="Previous song">⏮</button>
+    <button type="button" data-m="play" class="mini-play" aria-label="Play">▶</button>
+    <button type="button" data-m="next" aria-label="Next song">⏭</button>
+    <button type="button" data-m="list" aria-label="Show playlist" aria-expanded="false">☰</button>
+  </div>
+</aside>
 <audio id="bgm" preload="none"></audio>
 
 <script src="/data.js"></script>
