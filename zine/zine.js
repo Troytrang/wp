@@ -249,6 +249,12 @@
   });
   document.addEventListener("click", (e) => { if (!mlist.hidden && !e.target.closest("#mini")) { mlist.hidden = true; } });
   bgm.addEventListener("ended", () => { load(cur + 1); bgm.play().catch(() => {}); });
+  // first visit only: a note with an arrow pointing at the player
+  const tip = $("#mini-tip"); let tipSeen = false;
+  try { tipSeen = localStorage.getItem("zine-music-tip") === "1"; } catch (e) {}
+  const hideTip = () => { tip.classList.remove("show"); setTimeout(() => (tip.hidden = true), 300); try { localStorage.setItem("zine-music-tip", "1"); } catch (e) {} };
+  if (!tipSeen) { try { localStorage.setItem("zine-music-tip", "1"); } catch (e) {} setTimeout(() => { tip.hidden = false; requestAnimationFrame(() => tip.classList.add("show")); }, 1500); setTimeout(hideTip, 14000); }
+  mini.addEventListener("click", (e) => { if (!tip.hidden) hideTip(); });
   bgm.addEventListener("play", paint); bgm.addEventListener("pause", paint);
 
   /* ---------- people ---------- */
