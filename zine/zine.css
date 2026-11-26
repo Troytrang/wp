@@ -245,8 +245,9 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
 .g-dia { width: 14px !important; height: 14px !important; rotate: 45deg; background: linear-gradient(90deg, var(--blue) 50%, #46c46a 50%) !important; }
 
 /* keychain */
-.charm { position: absolute; right: -96px; top: -40px; z-index: 6; width: 150px; padding: 0; border: 0; background: none; transform-origin: 75px 0;
+.charm { position: absolute; right: -96px; top: 6px; pointer-events: none; z-index: 6; width: 150px; padding: 0; border: 0; background: none; transform-origin: 75px 0;
   animation: swing 3.2s ease-in-out infinite alternate; }
+.charm-ring, .charm-chain, .pod { pointer-events: auto; }   /* only the keychain itself is grabbable, not its empty box */
 .charm { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 .charm.dragging { cursor: grabbing; z-index: 30; }
 .charm.dragging .pod { filter: drop-shadow(10px 14px 0 rgba(0,0,0,.3)); }
@@ -308,7 +309,7 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
   .charm { right: -40px; } .arrow-sign { right: -20px; }
 }
 @media (max-width: 760px) {
-  .charm { right: 2px; top: -26px; width: 96px; transform-origin: 48px 0; }
+  .charm { right: 2px; top: 4px; width: 96px; transform-origin: 48px 0; }
   .pod { width: 96px; height: 110px; } 
   .lid-screen { width: 48px; height: 38px; } .lid-txt { font-size: 13px; } .lid-btns i { width: 10px; height: 10px; } .pod-hi { font-size: 14px; }
   .sign { display: none; }   /* no free margin on phones: the signs would sit on the back button */
