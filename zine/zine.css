@@ -70,7 +70,9 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
 .tape-top { display: flex; justify-content: space-between; font: 18px/1 var(--term); margin-bottom: 4px; }
 .rec { color: var(--red); animation: blink 1s steps(1) infinite; }
 .tc { letter-spacing: 1px; }
-.tape-label b { display: block; font: 700 clamp(34px, 4.6vw, 52px)/.95 var(--pix); letter-spacing: 1px; }
+.tape-label { container-type: inline-size; }
+/* sized to the label's own width so the wide pixel font never runs past the edge ("EDITOR" = 6 wide letters) */
+.tape-label b { display: block; font: 700 30px/.95 var(--pix); font-size: min(14cqi, 50px); letter-spacing: 0; white-space: nowrap; }
 .t1 { color: var(--ink); text-shadow: 3px 3px 0 var(--lime); }
 .t2 { color: var(--lime); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
 .side { display: inline-block; margin-top: 6px; font: 15px var(--term); white-space: nowrap; max-width: 100%; overflow: hidden; background: var(--ink); color: var(--lime); padding: 0 8px; }
