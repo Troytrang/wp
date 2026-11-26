@@ -13,6 +13,15 @@
     requestAnimationFrame(tick);
   })();
 
+  /* ---------- trang.pod keychain: click to open, shows the photo (zine/img/face.jpg) or a pixel face ---------- */
+  const charm = $("#charm"), face = $("#face");
+  face.onload = () => { face.hidden = false; $("#pix-face").hidden = true; };
+  face.src = "/zine/img/face.jpg";
+  charm.addEventListener("click", () => {
+    const open = charm.classList.toggle("open");
+    charm.setAttribute("aria-pressed", open); charm.setAttribute("aria-label", open ? "Close the keychain" : "Open the keychain");
+  });
+
   /* ---------- small text bits ---------- */
   const d = new Date(), M = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
   $("#updated").textContent = `${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`;
@@ -44,9 +53,9 @@
   function parseVideo(url) {
     if (!url) return null; let m;
     if ((m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([\w-]{11})/)))
-      return { kind: "yt", embed: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&rel=0&modestbranding=1&playsinline=1`, thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
+      return { kind: "yt", loop: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&mute=1&loop=1&playlist=${m[1]}&controls=0&playsinline=1&rel=0&modestbranding=1&disablekb=1`, embed: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&rel=0&modestbranding=1&playsinline=1`, thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
     if ((m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)))
-      return { kind: "vimeo", embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1&title=0&byline=0&portrait=0&dnt=1`, thumb: `https://vumbnail.com/${m[1]}.jpg` };
+      return { kind: "vimeo", loop: `https://player.vimeo.com/video/${m[1]}?autoplay=1&muted=1&loop=1&autopause=0&controls=0&title=0&byline=0&portrait=0&dnt=1`, embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1&title=0&byline=0&portrait=0&dnt=1`, thumb: `https://vumbnail.com/${m[1]}.jpg` };
     if ((m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/)))
       return { kind: "drive", embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w600` };
     if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) return { kind: "file", src: url };
@@ -107,6 +116,7 @@
   }
   let shown = [];
   function render() {
+    if (typeof stopPv === "function") stopPv();
     const here = stack[stack.length - 1];
     back.disabled = !stack.length;
     path.textContent = "C:/trang/work/" + stack.map((x) => fold(x.title).replace(/[^a-z0-9]+/g, "_")).join("/") + (stack.length ? "/" : "");
@@ -132,12 +142,30 @@
       ? `<button class="file folder c2" type="button" data-f="${j}"><span class="thumb"><span class="fold"><i>${x.list.length}</i></span></span><span class="name">${esc(x.title)}</span></button>`
       : fileTile(x, shown, k++)).join("");
   }
+  // hover a clip = it plays inside its thumbnail (muted); Drive can't autoplay, so those keep their picture
+  const canHover = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  let pvTimer, pvOn = null;
+  function stopPv() { clearTimeout(pvTimer); if (pvOn) { pvOn.querySelector(".pv")?.remove(); pvOn.classList.remove("playing"); pvOn = null; } }
+  files.addEventListener("mouseover", (e) => {
+    if (!canHover) return;
+    const b = e.target.closest("button.file[data-i]"); if (!b || b === pvOn) return;
+    stopPv();
+    pvTimer = setTimeout(() => {
+      const it = shown[+b.dataset.i], v = parseVideo(it.video), pre = preview(it), th = b.querySelector(".thumb");
+      const html = pre ? `<video class="pv" src="${abs(pre.src)}" autoplay muted loop playsinline></video>`
+        : v?.kind === "file" ? `<video class="pv" src="${esc(v.src)}" autoplay muted loop playsinline></video>`
+        : v?.loop ? `<iframe class="pv" src="${v.loop}" allow="autoplay" tabindex="-1" aria-hidden="true"></iframe>` : "";
+      if (!html) return;
+      th.insertAdjacentHTML("beforeend", html); b.classList.add("playing"); pvOn = b;
+    }, 180);
+  });
+  files.addEventListener("mouseout", (e) => { const b = e.target.closest("button.file"); if (b && !b.contains(e.relatedTarget)) stopPv(); });
   files.addEventListener("click", (e) => {
     const b = e.target.closest("button.file"); if (!b) return;
     const here = stack[stack.length - 1];
     if (b.dataset.s) { stack.push(SECTIONS[+b.dataset.s]); render(); }
     else if (b.dataset.f) { stack.push((here.tree || here.list)[+b.dataset.f]); render(); }
-    else open(shown, +b.dataset.i);
+    else { stopPv(); open(shown, +b.dataset.i); }
   });
   back.addEventListener("click", () => { stack.pop(); render(); });
   $("#search").addEventListener("input", (e) => { query = fold(e.target.value); render(); });
