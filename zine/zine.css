@@ -104,6 +104,7 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
 .keys i.down { translate: 0 5px; box-shadow: 0 0 0 var(--ink) !important; }   /* pressed (with a click sound) */
 .paper { background: var(--cream); border: 4px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); text-align: center; max-height: 190px; }
 .paper .hint { color: var(--lime-d); font-weight: 400; }
+.paper p { margin: 0 0 4px; }   /* one line after another, no blank lines in between */
 
 .marquee { overflow: hidden; background: var(--ink); color: var(--lime); font: 26px var(--term); white-space: nowrap; border-block: 3px solid var(--ink); }
 .marquee div { display: inline-flex; animation: marq 22s linear infinite; }
