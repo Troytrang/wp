@@ -106,6 +106,11 @@
 
   // site-hosted highlight loops (e.g. the A80 LED wall) play instead of a squeezed Drive/YouTube copy
   const preview = (it) => { const k = Object.keys(D.previews || {}).find((x) => fold(x) === fold(it.title)); return k ? D.previews[k] : null; };
+  // Game Ads: landscape clips first, then vertical; files named Game_creative_01, 02… in that order
+  SECTIONS.filter((s) => s.id === "game-ads").forEach((s) => {
+    s.list = [...s.list.filter((it) => !it.vert), ...s.list.filter((it) => it.vert)];
+    s.list.forEach((it, i) => { it.fileName = `Game_creative_${String(i + 1).padStart(2, "0")}`; it.project = it.project || it.fileName; });
+  });
   // same name (or same "Dự án") several times = one sub-folder
   SECTIONS.forEach((s) => {
     const n = {}; s.list.forEach((it) => { const k = fold(it.project || it.title); n[k] = (n[k] || 0) + 1; });
@@ -121,7 +126,7 @@
   /* ---------- the explorer ---------- */
   const files = $("#xp-files"), path = $("#xp-path"), back = $("#xp-back"), count = $("#xp-count"), foot = $("#xp-foot");
   let stack = [], query = "";
-  const fname = (it, n) => (it.title || "untitled").replace(/\s*[–—-]\s*/g, "_").replace(/\s+/g, "_") + (n ? `_${String(n).padStart(2, "0")}` : "") + ".mp4";
+  const fname = (it, n) => it.fileName ? it.fileName + ".mp4" : (it.title || "untitled").replace(/\s*[–—-]\s*/g, "_").replace(/\s+/g, "_") + (n ? `_${String(n).padStart(2, "0")}` : "") + ".mp4";
   function fileTile(it, list, i) {
     const v = parseVideo(it.video), pre = preview(it);
     if (!v && !pre) return `<div class="file ph" title="coming soon"><span class="thumb ${it.vert ? "v" : "w"}">coming soon</span><span class="name">${esc(fname(it))}</span></div>`;
