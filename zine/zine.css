@@ -306,7 +306,7 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
   .charm { right: 2px; top: -26px; width: 96px; transform-origin: 48px 0; }
   .pod { width: 96px; height: 110px; } 
   .lid-screen { width: 48px; height: 38px; } .lid-txt { font-size: 13px; } .lid-btns i { width: 10px; height: 10px; } .pod-hi { font-size: 14px; }
-  .sign-a { left: -16px; top: -70px; width: 90px; } .sign-b { display: none; } .sign figcaption { font-size: 10px; }
+  .sign { display: none; }   /* no free margin on phones: the signs would sit on the back button */
   .arrow-sign { position: relative; right: auto; top: auto; display: block; margin: 0 auto 26px; rotate: -4deg; }
   .ui-glyphs, .sp1 { display: none; }
 }
