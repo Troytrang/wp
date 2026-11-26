@@ -1,6 +1,16 @@
 {
   "rewrites": [
-    { "source": "/dark", "destination": "/index.html" },
-    { "source": "/bright", "destination": "/index.html" }
+    {
+      "source": "/dark",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/bright",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/zine",
+      "destination": "/zine/index.html"
+    }
   ]
 }

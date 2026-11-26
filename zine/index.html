@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRANGSPACE ★ Lương Nguyễn Thu Trang — Video Editor</title>
+<meta name="description" content="Thu Trang — video editor for game ads, LED visuals and brand films. The scrapbook edition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&family=Bungee+Shade&family=Space+Mono:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/zine/zine.css">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><img class="bg-bolt b1" src="/zine/img/tia-set.svg" alt=""><img class="bg-bolt b2" src="/zine/img/tia-set.svg" alt=""></div>
+
+<div class="page">
+  <!-- top bar -->
+  <header class="top">
+    <p class="updated">LAST UPDATED: <span id="updated"></span></p>
+    <div class="titlebar">
+      <a class="logo" href="/zine/">TRANGSPACE</a>
+      <button class="daily" type="button" id="daily" title="Opens a random video">DAILY CLICK</button>
+      <span class="sq" aria-hidden="true"></span><span class="sq" aria-hidden="true"></span>
+    </div>
+    <nav class="navrow" aria-label="Main">
+      <a href="#work"><u>W</u>ORK</a> | <a href="#about"><u>A</u>BOUT</a> | <a href="#contact"><u>C</u>ONTACT</a> | <a href="/"><u>C</u>LEAN VERSION</a>
+      <label class="search"><span class="sr">Search videos</span><input id="search" type="search" placeholder="whos this editor" autocomplete="off"><span class="mag" aria-hidden="true">⌕</span></label>
+    </nav>
+  </header>
+
+  <!-- hero -->
+  <section class="hero" id="about">
+    <div class="pfp">
+      <div class="pfp-frame"><img src="/zine/img/sticker-2-dong.svg" alt="Video Editor sticker"></div>
+      <p class="pfp-tag">&gt;&gt; <u>VIDEO</u>/<u>EDITOR</u>, HANOI</p>
+      <img class="deco-star s1" src="/zine/img/dau-sao.svg" alt="">
+    </div>
+    <div class="hello">
+      <h1 class="graffiti">THU TRANG!</h1>
+      <div class="scrollbox paper" tabindex="0">
+        <p>HELLO!! im Trang, i cut videos B:)</p>
+        <p class="hint">(this is scrollable)</p>
+        <p>Video editor for <mark>game ads</mark>, <mark>LED stage visuals</mark> and <mark>brand films</mark>. Currently at VTC Intercom, freelancing on the side.</p>
+        <p>I like fast hooks, clean cuts, big screens and making a 6400px-wide LED wall look good.</p>
+        <p>~ scroll more for the stuff below ~</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true"><div><span>★ GAME ADS ★ LED VISUAL ★ BRAND &amp; PRODUCT ★ AFTER EFFECTS ★ PREMIERE ★ BLENDER </span><span>★ GAME ADS ★ LED VISUAL ★ BRAND &amp; PRODUCT ★ AFTER EFFECTS ★ PREMIERE ★ BLENDER </span></div></div>
+
+  <section class="row2">
+    <div class="win dark">
+      <h2 class="win-h">&gt;&gt;Software&lt;&lt;</h2>
+      <div class="scrollbox" tabindex="0">
+        <p class="center">^ <span id="soft"></span></p>
+        <p class="center dim">+ AI tools: <span id="ai"></span></p>
+      </div>
+    </div>
+    <div class="win grey">
+      <h2 class="win-h">[ BASIC INFO ]</h2>
+      <div class="scrollbox" tabindex="0" id="exp"></div>
+      <span class="label-sticker">HIRE<br>ME</span>
+    </div>
+  </section>
+
+  <!-- work: a file explorer -->
+  <section class="win explorer" id="work" aria-labelledby="work-h">
+    <div class="xp-title"><h2 id="work-h">MY WORK!</h2><span class="sq" aria-hidden="true"></span><span class="sq" aria-hidden="true"></span></div>
+    <div class="xp-bar"><button type="button" id="xp-back" aria-label="Back">◀</button><span id="xp-path">C:/trang/work/</span><span id="xp-count"></span></div>
+    <div class="xp-files" id="xp-files" aria-live="polite"></div>
+    <p class="xp-foot" id="xp-foot"></p>
+  </section>
+
+  <section class="music">
+    <div class="win dark music-win">
+      <h2 class="win-h left">&gt;&gt; BANGER MUSIC !!</h2>
+      <div class="tracks" id="tracks"></div>
+      <p class="now" id="now">click a tile to play ♪</p>
+    </div>
+    <div class="music-side">
+      <div class="side-frame"><img src="/zine/img/icon-clapper.svg" alt=""><img src="/zine/img/icon-tay-cam.svg" alt=""><img src="/zine/img/icon-man-hinh.svg" alt=""></div>
+      <img class="deco-star s2" src="/zine/img/dau-sao.svg" alt="">
+    </div>
+  </section>
+
+  <section class="win people" aria-labelledby="ppl-h">
+    <h2 class="ppl-h" id="ppl-h"><span aria-hidden="true">👥</span> VERY COOL PEOPLE I'VE WORKED WITH!!</h2>
+    <p class="ppl-sub">› they mean a great deal to me, thank u for the projects</p>
+    <div class="ppl-list" id="ppl"></div>
+    <button class="ppl-more" type="button" id="ppl-more">↓ <i>CLICK THE ARROW TO SHOW THE REST</i></button>
+  </section>
+
+  <section class="bye" id="contact">
+    <div class="bubble">
+      <p><i>WAITTTTT!!!</i> before you go, consider hiring&nbsp;me&nbsp;!</p>
+      <p class="face">:( &lt;33</p>
+    </div>
+    <div class="contact-pills">
+      <button type="button" class="pill" id="mail"></button>
+      <a class="pill" id="tel"></a>
+      <span class="pill" id="loc"></span>
+    </div>
+    <form class="ask" id="ask">
+      <label class="sr" for="q">Message</label>
+      <input id="q" placeholder="got a project? or just wanna say hi?" autocomplete="off">
+      <button type="submit" aria-label="Send by email">➤</button>
+    </form>
+    <p class="foot">© <span id="yr"></span> Lương Nguyễn Thu Trang · made with too much lime green · <a href="/">clean version →</a></p>
+  </section>
+</div>
+
+<!-- video player window -->
+<div class="player" id="player" hidden>
+  <div class="pl-win" role="dialog" aria-modal="true" aria-labelledby="pl-title">
+    <div class="xp-title"><h2 id="pl-title">player.exe</h2><button type="button" class="pl-x" data-close aria-label="Close">✕</button></div>
+    <div class="pl-screen" id="pl-screen"></div>
+    <div class="pl-bar"><button type="button" data-step="-1" aria-label="Previous video">◀ PREV</button><span id="pl-count"></span><button type="button" data-step="1" aria-label="Next video">NEXT ▶</button></div>
+  </div>
+</div>
+<audio id="bgm" preload="none"></audio>
+
+<script src="/data.js"></script>
+<script src="/zine/zine.js"></script>
+</body>
+</html>
