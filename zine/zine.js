@@ -43,10 +43,24 @@
     try { await navigator.clipboard.writeText(C.email); e.currentTarget.textContent = "✓ copied!"; } catch (er) { location.href = `mailto:${C.email}`; }
     setTimeout(() => ($("#mail").textContent = `✉ ${C.email}`), 1600);
   });
-  $("#ask").addEventListener("submit", (e) => {
+  // the message is delivered to Trang's inbox by FormSubmit (no mail app needed on the visitor's side);
+  // if that service can't be reached, Gmail opens with the message already filled in
+  $("#ask").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const msg = $("#q").value.trim();
-    location.href = `mailto:${C.email}?subject=${encodeURIComponent("Hello from your portfolio")}&body=${encodeURIComponent(msg)}`;
+    const from = $("#q-from").value.trim(), msg = $("#q").value.trim(), st = $("#ask-status"), btn = e.target.querySelector("button");
+    if (!msg) return;
+    btn.disabled = true; st.textContent = "sending…";
+    try {
+      const r = await fetch(`https://formsubmit.co/ajax/${C.email}`, { method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: from, message: msg, _subject: "New message from TRANGSPACE", _template: "box", _captcha: "false" }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || String(j.success) === "false") throw 0;
+      st.textContent = "✓ sent! i'll get back to you soon <3"; e.target.reset();
+    } catch (er) {
+      st.innerHTML = `couldn't send from here — <a href="https://mail.google.com/mail/?view=cm&to=${C.email}&su=${encodeURIComponent("Hello from your portfolio")}&body=${encodeURIComponent(msg)}" target="_blank" rel="noopener">open it in Gmail</a> or write to ${C.email}`;
+    }
+    btn.disabled = false;
   });
 
   /* ---------- videos: the sheet, with data.js as fallback ---------- */
@@ -145,7 +159,7 @@
   // hover a clip = it plays inside its thumbnail (muted); Drive can't autoplay, so those keep their picture
   const canHover = matchMedia("(hover: hover) and (pointer: fine)").matches;
   let pvTimer, pvOn = null;
-  function stopPv() { clearTimeout(pvTimer); if (pvOn) { pvOn.querySelector(".pv")?.remove(); pvOn.classList.remove("playing"); pvOn = null; } }
+  function stopPv() { clearTimeout(pvTimer); if (pvOn) { pvOn.querySelector(".pv")?.remove(); pvOn.classList.remove("playing", "loading"); pvOn = null; } }
   files.addEventListener("mouseover", (e) => {
     if (!canHover) return;
     const b = e.target.closest("button.file[data-i]"); if (!b || b === pvOn) return;
@@ -156,8 +170,9 @@
         : v?.kind === "file" ? `<video class="pv" src="${esc(v.src)}" autoplay muted loop playsinline></video>`
         : v?.loop ? `<iframe class="pv" src="${v.loop}" allow="autoplay" tabindex="-1" aria-hidden="true"></iframe>` : "";
       if (!html) return;
-      th.insertAdjacentHTML("beforeend", html); b.classList.add("playing"); pvOn = b;
-    }, 180);
+      th.insertAdjacentHTML("beforeend", html); b.classList.add("playing", "loading"); pvOn = b;
+      const el = th.querySelector(".pv"); el.addEventListener(el.tagName === "IFRAME" ? "load" : "playing", () => b.classList.remove("loading"), { once: true });
+    }, 80);
   });
   files.addEventListener("mouseout", (e) => { const b = e.target.closest("button.file"); if (b && !b.contains(e.relatedTarget)) stopPv(); });
   files.addEventListener("click", (e) => {

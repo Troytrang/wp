@@ -107,7 +107,6 @@
 
 
   <section class="win people" aria-labelledby="ppl-h">
-    <div class="tape-strip t-a" aria-hidden="true"><span>CAUTION ✦ VIDEO EDITOR ✦ GAME ADS ✦ LED VISUAL ✦ BRAND &amp; PRODUCT ✦ CAUTION ✦ VIDEO EDITOR ✦ GAME ADS ✦</span></div>
     <h2 class="ppl-h" id="ppl-h"><span aria-hidden="true">👥</span> VERY COOL PEOPLE I'VE WORKED WITH!!</h2>
     <p class="ppl-sub">› they mean a great deal to me, thank u for the projects</p>
     <div class="ppl-list" id="ppl"></div>
@@ -120,7 +119,6 @@
       <span class="as-t">OPEN FOR<br>PROJECTS</span>
       <span class="as-d">REPLY &lt; 24H<br>2026 / 2027</span>
     </a>
-    <div class="tape-strip t-b" aria-hidden="true"><span>TRANGSPACE ✦ HIRE ME ✦ VIDEO EDITOR ✦ HANOI ✦ TRANGSPACE ✦ HIRE ME ✦ VIDEO EDITOR ✦ HANOI ✦</span></div>
     <svg class="spark sp3" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0C21 15 25 19 40 20C25 21 21 25 20 40C19 25 15 21 0 20C15 19 19 15 20 0Z"/></svg>
     <div class="bubble">
       <p class="b1"><i>WAITTTTT!!!</i></p>
@@ -133,9 +131,12 @@
       <span class="pill" id="loc"></span>
     </div>
     <form class="ask" id="ask">
+      <label class="sr" for="q-from">Your email</label>
+      <input id="q-from" type="email" required placeholder="your email (so i can reply)" autocomplete="email">
       <label class="sr" for="q">Message</label>
-      <input id="q" placeholder="got a project? or just wanna say hi?" autocomplete="off">
-      <button type="submit" aria-label="Send by email">➤</button>
+      <textarea id="q" required rows="2" placeholder="got a project? or just wanna say hi?"></textarea>
+      <button type="submit" aria-label="Send message">SEND ➤</button>
+      <p class="ask-status" id="ask-status" role="status"></p>
     </form>
     <p class="foot">© <span id="yr"></span> Lương Nguyễn Thu Trang · made with too much lime green · <a href="/">clean version →</a></p>
   </section>
