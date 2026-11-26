@@ -99,7 +99,9 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
 .keys i:nth-child(3n+1) { rotate: -4deg; } .keys i:nth-child(3n+2) { rotate: 3deg; background: var(--ink); color: var(--lime); border-color: var(--ink); box-shadow: 0 5px 0 var(--lime), 0 5px 0 3px var(--ink); }
 .keys i:nth-child(3n) { rotate: -1deg; background: var(--lime-2); }
 .keys .bang { background: var(--red) !important; color: var(--cream) !important; }
-.keys i:hover { translate: 0 5px; box-shadow: 0 0 0 var(--ink); }   /* press the key */
+.keys i { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.keys i:hover { translate: 0 2px; }
+.keys i.down { translate: 0 5px; box-shadow: 0 0 0 var(--ink) !important; }   /* pressed (with a click sound) */
 .paper { background: var(--cream); border: 4px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); text-align: center; max-height: 190px; }
 .paper .hint { color: var(--lime-d); font-weight: 400; }
 
@@ -245,6 +247,9 @@ mark { background: var(--lime); color: var(--ink); padding: 0 3px; }
 /* keychain */
 .charm { position: absolute; right: -96px; top: -40px; z-index: 6; width: 150px; padding: 0; border: 0; background: none; transform-origin: 75px 0;
   animation: swing 3.2s ease-in-out infinite alternate; }
+.charm { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.charm.dragging { cursor: grabbing; z-index: 30; }
+.charm.dragging .pod { filter: drop-shadow(10px 14px 0 rgba(0,0,0,.3)); }
 .charm:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
 .charm-ring { display: block; width: 34px; height: 34px; margin: 0 auto; border: 6px solid #c9ccd2; border-radius: 50%; box-shadow: inset 0 0 0 2px #8d9098, 0 0 0 2px #6b6e75; }
 .charm-chain { display: block; width: 8px; height: 46px; margin: -4px auto 0; background: repeating-linear-gradient(180deg, #c9ccd2 0 7px, #6b6e75 7px 9px); border-radius: 3px; }

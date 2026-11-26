@@ -17,9 +17,57 @@
   const charm = $("#charm"), face = $("#face");
   face.onload = () => { face.hidden = false; $("#pix-face").hidden = true; };
   face.src = "/zine/img/face.jpg";
-  charm.addEventListener("click", () => {
+  /* drag it around: it swings with the movement and stays where it is dropped; a plain click still opens it */
+  let drag = null, dragged = false, dx = 0, dy = 0, ang = 0, angV = 0, target = 0, raf = 0, lastX = 0;
+  function physics() {
+    angV += (target - ang) * 0.12; angV *= 0.86; ang += angV; target *= 0.9;
+    charm.style.rotate = `${ang.toFixed(2)}deg`;
+    if (drag || Math.abs(angV) > 0.02 || Math.abs(ang) > 0.05) raf = requestAnimationFrame(physics);
+    else { raf = 0; charm.style.rotate = ""; charm.style.animation = ""; }      // settle back into the idle sway
+  }
+  charm.addEventListener("pointerdown", (e) => {
+    if (e.button) return;
+    drag = { x: e.clientX, y: e.clientY, dx, dy }; dragged = false; lastX = e.clientX;
+    charm.setPointerCapture(e.pointerId);
+  });
+  charm.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const mx = e.clientX - drag.x, my = e.clientY - drag.y;
+    if (!dragged && Math.hypot(mx, my) < 6) return;
+    if (!dragged) { dragged = true; charm.classList.add("dragging"); charm.style.animation = "none"; if (!raf) raf = requestAnimationFrame(physics); }
+    dx = drag.dx + mx; dy = drag.dy + my;
+    charm.style.translate = `${dx}px ${dy}px`;
+    target = Math.max(-55, Math.min(55, -(e.clientX - lastX) * 2.2)); lastX = e.clientX;   // hangs back against the motion
+  });
+  const end = () => { if (!drag) return; drag = null; charm.classList.remove("dragging"); if (!raf) raf = requestAnimationFrame(physics); };
+  charm.addEventListener("pointerup", end); charm.addEventListener("pointercancel", end);
+  charm.addEventListener("dblclick", () => { dx = dy = 0; charm.style.translate = ""; });   // double-click: back on its hook
+  charm.addEventListener("click", (e) => {
+    if (dragged) { dragged = false; e.preventDefault(); return; }
     const open = charm.classList.toggle("open");
     charm.setAttribute("aria-pressed", open); charm.setAttribute("aria-label", open ? "Close the keychain" : "Open the keychain");
+  });
+
+  /* ---------- THU TRANG keycaps: mechanical keyboard click (made in Web Audio, no sound file) ---------- */
+  let ac;
+  function clack(i) {
+    try { ac ||= new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) { return; }
+    const t = ac.currentTime, out = ac.createGain(); out.gain.value = 0.55; out.connect(ac.destination);
+    // the click: a very short burst of filtered noise
+    const len = Math.floor(ac.sampleRate * 0.035), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let k = 0; k < len; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / len, 3);
+    const n = ac.createBufferSource(), bp = ac.createBiquadFilter();
+    n.buffer = buf; bp.type = "bandpass"; bp.frequency.value = 2600 + (i % 5) * 260 + Math.random() * 300; bp.Q.value = 1.4;
+    n.connect(bp).connect(out); n.start(t);
+    // the thock: a quick low tone as the key bottoms out
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = "triangle"; o.frequency.setValueAtTime(190 + Math.random() * 40, t); o.frequency.exponentialRampToValueAtTime(90, t + 0.05);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+    o.connect(g).connect(out); o.start(t); o.stop(t + 0.08);
+  }
+  document.querySelectorAll(".keys i").forEach((k, i) => {
+    k.addEventListener("pointerdown", () => { clack(i); k.classList.add("down"); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => k.addEventListener(ev, () => k.classList.remove("down")));
   });
 
   /* ---------- small text bits ---------- */
