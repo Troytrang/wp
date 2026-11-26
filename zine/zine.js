@@ -87,7 +87,7 @@
   $("#exp").innerHTML = D.experience.map((e) => `<div class="exp-item"><b>${esc(e.company)} · ${esc(e.years)}</b><span>${esc(e.role)}</span></div>`).join("");
   const C = D.contact;
   $("#mail").textContent = `✉ ${C.email}`;
-  $("#tel").textContent = `☏ ${C.phone}`; $("#tel").href = `tel:${C.phone.replace(/\s/g, "")}`;
+  // phone hidden for now (pill commented out in index.html)
   $("#loc").textContent = `⌖ ${C.location}`;
   $("#mail").addEventListener("click", async (e) => {
     try { await navigator.clipboard.writeText(C.email); e.currentTarget.textContent = "✓ copied!"; } catch (er) { location.href = `mailto:${C.email}`; }
